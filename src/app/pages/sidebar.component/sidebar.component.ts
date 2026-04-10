@@ -237,6 +237,7 @@ export class SidebarComponent {
 
   navItems: NavItem[] = [
     { path: 'dashboard', icon: '📊', label: 'Dashboard' },
+    { path: 'rastreamento', icon: '📡', label: 'Rastreamento', badge: 'LIVE' },
     { path: 'sinais', icon: '📍', label: 'Sinais', badge: '3' },
     { path: 'painel-motorista', icon: '🚌', label: 'Painel Motorista' },
     { path: 'mapa', icon: '🗺️', label: 'Mapa ao Vivo' },

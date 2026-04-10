@@ -110,7 +110,7 @@ import { filter } from 'rxjs/operators';
         align-items: center;
         justify-content: center;
         font-size: 16px;
-        color: white;
+        color: var(--text-secondary);
         cursor: pointer;
         transition: all var(--transition);
         &:hover {
@@ -163,6 +163,7 @@ export class NavbarComponent implements OnInit {
 
   private pageMap: Record<string, string> = {
     '/dashboard': 'Dashboard',
+    '/rastreamento': '📡 Rastreamento ao Vivo',
     '/sinais': 'Sinais de Embarque',
     '/painel-motorista': 'Painel do Motorista',
     '/mapa': 'Mapa ao Vivo',
