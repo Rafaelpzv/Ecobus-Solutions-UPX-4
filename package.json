@@ -17,10 +17,13 @@
     "@angular/core": "^21.2.0",
     "@angular/forms": "^21.2.0",
     "@angular/platform-browser": "^21.2.0",
-    "@angular/router": "^21.2.0",
+    "@angular/router": "^21.2.8",
+    "@supabase/supabase-js": "^2.103.0",
     "bootstrap": "^5.3.8",
     "rxjs": "~7.8.0",
-    "tslib": "^2.3.0"
+    "tslib": "^2.3.0",
+    "uuid": "^13.0.0",
+    "ws": "^8.20.0"
   },
   "devDependencies": {
     "@angular/build": "^21.2.6",
@@ -30,5 +33,19 @@
     "prettier": "^3.8.1",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
-  }
+  },
+  "description": "Sistema web para melhoria da mobilidade urbana, conectando passageiros e motoristas em tempo real através de sinais digitais nos pontos de ônibus.",
+  "main": "server.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Rafaelpzv/Ecobus-Solutions-UPX-4.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Rafaelpzv/Ecobus-Solutions-UPX-4/issues"
+  },
+  "homepage": "https://github.com/Rafaelpzv/Ecobus-Solutions-UPX-4#readme"
 }

@@ -43,6 +43,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./pages/routes.component/routes.component').then((m) => m.RoutesComponent),
       },
+      {
+        path: 'rastreamento',
+        loadComponent: () =>
+          import('./pages/tracking.component/tracking.component').then((m) => m.TrackingComponent),
+      },
+      {
+        path: 'sinais',
+        loadComponent: () =>
+          import('./pages/signals.component/signals.component').then((m) => m.SignalsComponent),
+      },
     ],
   },
 
