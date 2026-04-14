@@ -99,31 +99,29 @@ interface SignalEvent {
               </div>
             </div>
             <div class="lf-group">
-            <label>Código da sala</label>
+              <label>Código da sala</label>
 
-            <div class="input-group">
-              <span class="input-group-text input-transparent">🏷️</span>
+              <div class="input-group">
+                <span class="input-group-text input-transparent">🏷️</span>
 
-              <input
-                type="text"
-                class="form-control input-transparent"
-                placeholder="ex: linha-307"
-                [ngModel]="roomCode()"
-                (ngModelChange)="roomCode.set($event)"
-              />
+                <input
+                  type="text"
+                  class="form-control input-transparent"
+                  placeholder="ex: linha-307"
+                  [ngModel]="roomCode()"
+                  (ngModelChange)="roomCode.set($event)"
+                />
 
-              <button
-                class="btn btn-transparent"
-                type="button"
-                (click)="randomRoom()"
-              >
-                🎲
-              </button>
+                <button class="btn btn-transparent" type="button" (click)="randomRoom()">🎲</button>
+              </div>
             </div>
           </div>
-          </div>
 
-          <button class="btn btn-primary btn-lg join-btn btn-transparent" [disabled]="!canJoin()" (click)="join()">
+          <button
+            class="btn btn-primary btn-lg join-btn btn-transparent"
+            [disabled]="!canJoin()"
+            (click)="join()"
+          >
             Entrar na Sala →
           </button>
         </div>
@@ -188,557 +186,819 @@ interface SignalEvent {
         <div class="tracking-body">
           <!-- Sidebar -->
           <div class="track-sidebar">
-          <!-- My position -->
-          <div class="card bg-dark ts-card">
-            <div class="ts-header">
-              <span>Minha Posição</span>
-              <div class="pulse-dot" [style.display]="tracking() ? 'block' : 'none'"></div>
-            </div>
-            @if (myPosition()) {
-              <div class="my-pos">
-                <div class="pos-coord">📍 {{ myPosition()!.lat | number: '1.5-5' }}°</div>
-                <div class="pos-coord">📍 {{ myPosition()!.lng | number: '1.5-5' }}°</div>
-                <div class="pos-detail">
-                  <span>⚡ {{ myPosition()!.speed * 3.6 | number: '1.0-0' }} km/h</span>
-                  <span>🎯 ±{{ myPosition()!.accuracy | number: '1.0-0' }}m</span>
-                </div>
+            <!-- My position -->
+            <div class="card bg-dark ts-card">
+              <div class="ts-header">
+                <span>Minha Posição</span>
+                <div class="pulse-dot" [style.display]="tracking() ? 'block' : 'none'"></div>
               </div>
-            } @else {
-              <div class="no-pos">
-                <span>GPS inativo</span>
-                <button
-                  class="btn btn-primary btn-sm"
-                  style="margin-top:8px"
-                  (click)="startTracking()"
-                >
-                  Ativar GPS
-                </button>
-              </div>
-            }
-          </div>
-
-          <!-- Peers list -->
-          <div class="card bg-dark ts-card">
-            <div class="ts-header">
-              <span>Usuários na Sala</span>
-              <span class="badge badge-teal">{{ peers().length + 1 }}</span>
-            </div>
-
-            <!-- Myself -->
-            <div class="peer-item me">
-              <div class="peer-avatar" [class]="myRole() === 'driver' ? 'av-green' : 'av-teal'">
-                {{ myRole() === 'driver' ? '🚌' : '🧍' }}
-              </div>
-              <div class="peer-info">
-                <div class="peer-name">
-                  {{ myName || 'Você' }} <span class="you-tag">você</span>
-                </div>
-                <div class="peer-role">
-                  {{ myRole() === 'driver' ? 'Motorista' : 'Passageiro' }}
-                </div>
-              </div>
-              <div class="peer-status">
-                <div
-                  class="status-dot"
-                  [class]="'dot-' + (tracking() ? 'connected' : 'disconnected')"
-                ></div>
-              </div>
-            </div>
-
-            @for (peer of peers(); track peer.clientId) {
-              <div class="peer-item" (click)="focusPeer(peer.clientId)">
-                <div
-                  class="peer-avatar"
-                  [class]="peer.role === 'driver' ? 'av-green' : 'av-teal'"
-                >
-                  {{ peer.role === 'driver' ? '🚌' : '🧍' }}
-                </div>
-                <div class="peer-info">
-                  <div class="peer-name">{{ peer.name }}</div>
-                  <div class="peer-role">
-                    {{ peer.role === 'driver' ? 'Motorista' : 'Passageiro' }}
+              @if (myPosition()) {
+                <div class="my-pos">
+                  <div class="pos-coord">📍 {{ myPosition()!.lat | number: '1.5-5' }}°</div>
+                  <div class="pos-coord">📍 {{ myPosition()!.lng | number: '1.5-5' }}°</div>
+                  <div class="pos-detail">
+                    <span>⚡ {{ myPosition()!.speed * 3.6 | number: '1.0-0' }} km/h</span>
+                    <span>🎯 ±{{ myPosition()!.accuracy | number: '1.0-0' }}m</span>
                   </div>
                 </div>
-                <div class="peer-speed">
-                  @if ((trackedPeers[peer.clientId]?.speed ?? 0) > 0) {
-                    {{ trackedPeers[peer.clientId].speed * 3.6 | number: '1.0-0' }} km/h
-                  } @else {
-                    Parado
-                  }
+              } @else {
+                <div class="no-pos">
+                  <span>GPS inativo</span>
+                  <button
+                    class="btn btn-primary btn-sm"
+                    style="margin-top:8px"
+                    (click)="startTracking()"
+                  >
+                    Ativar GPS
+                  </button>
                 </div>
-              </div>
-            }
-
-            @if (peers().length === 0) {
-              <div class="no-peers">
-                Nenhum outro usuário na sala.<br />Compartilhe o código:
-                <strong>{{ currentRoom() }}</strong>
-              </div>
-            }
-          </div>
-
-          <!-- Signal log -->
-          <div class="card bg-dark ts-card" id="nosignal">
-            <div class="ts-header">
-              <span>Sinais Recebidos</span>
-              @if (signalLog().length > 0) {
-                <span class="badge badge-red">{{ signalLog().length }}</span>
               }
             </div>
-            @for (s of signalLog(); track s.id) {
-              <div class="signal-log-item">
-                <div class="sli-top">
-                  <span class="sli-name">{{ s.name }}</span>
-                  <span class="sli-time">{{ s.time }}</span>
-                </div>
-                <div class="sli-stop">📍 {{ s.stop }}</div>
-                <div class="sli-count">{{ s.count }} passageiro(s)</div>
+
+            <!-- Peers list -->
+            <div class="card bg-dark ts-card">
+              <div class="ts-header">
+                <span>Usuários na Sala</span>
+                <span class="badge badge-teal">{{ peers().length + 1 }}</span>
               </div>
-            }
-            @if (signalLog().length === 0) {
-              <div class="no-peers">Nenhum sinal emitido ainda</div>
-            }
-          </div>
-        </div>
 
-        <!-- Map -->
-        <div class="map-bottom-sheet" [class.expanded]="mapExpanded">
-          <div class="sheet-handle" (click)="toggleMap()"></div>
-          <div class="map-wrap">
-            <div #mapContainer class="leaflet-map"></div>
+              <!-- Myself -->
+              <div class="peer-item me">
+                <div class="peer-avatar" [class]="myRole() === 'driver' ? 'av-green' : 'av-teal'">
+                  {{ myRole() === 'driver' ? '🚌' : '🧍' }}
+                </div>
+                <div class="peer-info">
+                  <div class="peer-name">
+                    {{ myName() || 'Você' }} <span class="you-tag">você</span>
+                  </div>
+                  <div class="peer-role">
+                    {{ myRole() === 'driver' ? 'Motorista' : 'Passageiro' }}
+                  </div>
+                </div>
+                <div class="peer-status">
+                  <div
+                    class="status-dot"
+                    [class]="'dot-' + (tracking() ? 'connected' : 'disconnected')"
+                  ></div>
+                </div>
+              </div>
 
-          <!-- Map overlays -->
-          <div class="map-overlay-tl">
-            <button class="map-btn" title="Centralizar minha posição" (click)="centerOnMe()">
-              ⊙
-            </button>
-            <button class="map-btn" title="Ver todos" (click)="fitAll()">⤢</button>
-          </div>
+              @for (peer of peers(); track peer.clientId) {
+                <div class="peer-item" (click)="focusPeer(peer.clientId)">
+                  <div
+                    class="peer-avatar"
+                    [class]="peer.role === 'driver' ? 'av-green' : 'av-teal'"
+                  >
+                    {{ peer.role === 'driver' ? '🚌' : '🧍' }}
+                  </div>
+                  <div class="peer-info">
+                    <div class="peer-name">{{ peer.name }}</div>
+                    <div class="peer-role">
+                      {{ peer.role === 'driver' ? 'Motorista' : 'Passageiro' }}
+                    </div>
+                  </div>
+                  <div class="peer-speed">
+                    @if ((trackedPeers[peer.clientId]?.speed ?? 0) > 0) {
+                      {{ trackedPeers[peer.clientId].speed * 3.6 | number: '1.0-0' }} km/h
+                    } @else {
+                      Parado
+                    }
+                  </div>
+                </div>
+              }
 
-          @if (!leafletLoaded()) {
-            <div class="map-loading">
-              <div class="ml-spinner"></div>
-              <span>Carregando mapa…</span>
+              @if (peers().length === 0) {
+                <div class="no-peers">
+                  Nenhum outro usuário na sala.<br />Compartilhe o código:
+                  <strong>{{ currentRoom() }}</strong>
+                </div>
+              }
             </div>
-          }
+
+            <!-- Signal log -->
+            <div class="card bg-dark ts-card" id="nosignal">
+              <div class="ts-header">
+                <span>Sinais Recebidos</span>
+                @if (signalLog().length > 0) {
+                  <span class="badge badge-red">{{ signalLog().length }}</span>
+                }
+              </div>
+              @for (s of signalLog(); track s.id) {
+                <div class="signal-log-item">
+                  <div class="sli-top">
+                    <span class="sli-name">{{ s.name }}</span>
+                    <span class="sli-time">{{ s.time }}</span>
+                  </div>
+                  <div class="sli-stop">📍 {{ s.stop }}</div>
+                  <div class="sli-count">{{ s.count }} passageiro(s)</div>
+                </div>
+              }
+              @if (signalLog().length === 0) {
+                <div class="no-peers">Nenhum sinal emitido ainda</div>
+              }
+            </div>
+          </div>
+
+          <!-- Map -->
+          <div class="map-bottom-sheet" [class.expanded]="mapExpanded">
+            <div class="sheet-handle" (click)="toggleMap()"></div>
+            <div class="map-wrap">
+              <div #mapContainer class="leaflet-map"></div>
+
+              <!-- Map overlays -->
+              <div class="map-overlay-tl">
+                <button class="map-btn" title="Centralizar minha posição" (click)="centerOnMe()">
+                  ⊙
+                </button>
+                <button class="map-btn" title="Ver todos" (click)="fitAll()">⤢</button>
+              </div>
+
+              @if (!leafletLoaded()) {
+                <div class="map-loading">
+                  <div class="ml-spinner"></div>
+                  <span>Carregando mapa…</span>
+                </div>
+              }
+            </div>
+          </div>
         </div>
       </div>
+    }
 
-    </div>
-    </div>
-  }
-
-  <!-- ═══════════════════════ SIGNAL MODAL ════════════════════════════════ -->
-  @if (showSignalModal()) {
-    <div class="modal-overlay" (click)="showSignalModal.set(false)">
-      <div class="modal-box" (click)="$event.stopPropagation()">
-        <div class="modal-header">
-          <h2>🚨 Emitir Sinal de Embarque</h2>
-          <button class="close-btn" (click)="showSignalModal.set(false)">✕</button>
-        </div>
-        <div class="modal-body">
-          <div class="lf-group">
-            <label>Nome do Ponto</label>
-            <input
-              [(ngModel)]="signalStop"
-              placeholder="ex: Av. São Paulo, 450"
-              class="eco-input"
-            />
+    <!-- ═══════════════════════ SIGNAL MODAL ════════════════════════════════ -->
+    @if (showSignalModal()) {
+      <div class="modal-overlay" (click)="showSignalModal.set(false)">
+        <div class="modal-box" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>🚨 Emitir Sinal de Embarque</h2>
+            <button class="close-btn" (click)="showSignalModal.set(false)">✕</button>
           </div>
-          <div class="lf-group">
-            <label>Número de passageiros</label>
-            <input type="number" [(ngModel)]="signalCount" min="1" max="50" class="eco-input" />
+          <div class="modal-body">
+            <div class="lf-group">
+              <label>Nome do Ponto</label>
+              <input
+                [(ngModel)]="signalStop"
+                placeholder="ex: Av. São Paulo, 450"
+                class="eco-input"
+              />
+            </div>
+            <div class="lf-group">
+              <label>Número de passageiros</label>
+              <input type="number" [(ngModel)]="signalCount" min="1" max="50" class="eco-input" />
+            </div>
+            <div class="signal-loc-info">
+              @if (myPosition()) {
+                <span class="badge badge-green">📍 Localização GPS será incluída</span>
+              } @else {
+                <span class="badge badge-gray">⚠️ GPS inativo — localização não incluída</span>
+              }
+            </div>
           </div>
-          <div class="signal-loc-info">
-            @if (myPosition()) {
-              <span class="badge badge-green">📍 Localização GPS será incluída</span>
-            } @else {
-              <span class="badge badge-gray">⚠️ GPS inativo — localização não incluída</span>
-            }
+          <div class="modal-footer">
+            <button class="btn btn-ghost" (click)="showSignalModal.set(false)">Cancelar</button>
+            <button class="btn btn-primary" (click)="emitSignal()">Enviar Sinal</button>
           </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-ghost" (click)="showSignalModal.set(false)">Cancelar</button>
-          <button class="btn btn-primary" (click)="emitSignal()">Enviar Sinal</button>
         </div>
       </div>
-    </div>
-  }
-`,
-styles: [
-  `
-    :host { color: #fff; }
-    :host * { color: #fff !important; }
-
-    .btn-transparent {
-      background: transparent !important;
-      color: #fff !important;
-      border: 1px solid rgba(255,255,255,0.3);
     }
-    .btn-transparent:hover:not(:disabled) {
-      background: rgba(255,255,255,0.08);
-      border-color: #fff;
-    }
-    .btn-transparent:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-      border-color: rgba(255,255,255,0.2);
-    }
-    .btn-transparent:focus { box-shadow: none; }
-
-    .role-btn.input-transparent {
-      background: transparent !important;
-      color: #fff;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 10px;
-    }
-    .role-btn.input-transparent:hover {
-      background: rgba(255,255,255,0.05);
-      border-color: rgba(255,255,255,0.4);
-    }
-    .role-btn.input-transparent.selected {
-      background: rgba(255,255,255,0.1);
-      border-color: #fff;
-    }
-
-    .input-transparent {
-      background-color: transparent !important;
-      color: #fff !important;
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 10px;
-    }
-    .input-transparent::placeholder { color: rgba(255,255,255,0.5); }
-    .input-transparent:focus {
-      background-color: transparent !important;
-      color: #fff !important;
-      border-color: #fff;
-      box-shadow: none;
-    }
-
-    .lobby-wrap {
-      min-height: calc(100vh - var(--navbar-h));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 32px;
-    }
-    .lobby-card {
-      border: 1px solid var(--border-strong);
-      border-radius: var(--radius-xl);
-      padding: 40px;
-      width: 100%;
-      max-width: 540px;
-      box-shadow: var(--shadow-card);
-      text-align: center;
-    }
-    .lobby-icon { font-size: 48px; margin-bottom: 16px; display: block; }
-    .lobby-card h1 { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
-    .lobby-card > p { font-size: 14px; margin-bottom: 28px; line-height: 1.6; }
-
-    .role-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      margin-bottom: 24px;
-    }
-    .role-btn {
-      background: var(--bg-surface);
-      border: 2px solid var(--border);
-      border-radius: var(--radius-lg);
-      padding: 16px 12px;
-      text-align: center;
-      cursor: pointer;
-      position: relative;
-      transition: all var(--transition);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-      &:hover { border-color: rgba(0,230,118,0.4); background: var(--bg-elevated); }
-      &.selected { border-color: var(--primary); background: var(--primary-soft); }
-    }
-    .rb-icon { font-size: 28px; }
-    .rb-label { font-size: 14px; font-weight: 700; }
-    .rb-desc { font-size: 11px; line-height: 1.4; }
-    .rb-check {
-      position: absolute; top: 8px; right: 8px;
-      width: 20px; height: 20px; border-radius: 50%;
-      background: var(--primary); font-size: 11px; font-weight: 700;
-      display: flex; align-items: center; justify-content: center;
-    }
-
-    .lobby-form {
-      text-align: left;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      margin-bottom: 20px;
-    }
-    .lf-group { display: flex; flex-direction: column; gap: 6px; }
-    label {
-      font-size: 11px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.5px;
-      color: var(--text-muted);
-    }
-    .eco-input {
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      color: var(--text-primary);
-      padding: 10px 14px;
-      border-radius: var(--radius-md);
-      font-size: 14px;
-      font-family: inherit;
-      transition: border-color var(--transition);
-      width: 100%;
-      &:focus {
-        outline: none;
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px var(--primary-soft);
+  `,
+  styles: [
+    `
+      :host {
+        color: #fff;
       }
-    }
+      :host * {
+        color: #fff !important;
+      }
 
-    .join-btn { width: 100%; justify-content: center; margin-bottom: 14px; }
-    .join-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+      .btn-transparent {
+        background: transparent !important;
+        color: #fff !important;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+      }
+      .btn-transparent:hover:not(:disabled) {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: #fff;
+      }
+      .btn-transparent:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+      .btn-transparent:focus {
+        box-shadow: none;
+      }
 
-    .status-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      &.dot-connected    { background: var(--primary); }
-      &.dot-connecting   { background: var(--amber); animation: pulse 1s infinite; }
-      &.dot-disconnected { background: var(--text-muted); }
-      &.dot-error        { background: var(--red); }
-    }
+      .role-btn.input-transparent {
+        background: transparent !important;
+        color: #fff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+      }
+      .role-btn.input-transparent:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+      .role-btn.input-transparent.selected {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: #fff;
+      }
 
-    /* ── TRACKING ───────────────────────────────────────────── */
-    .tracking-layout {
-      display: flex;
-      flex-direction: column;
-      height: calc(100vh - var(--navbar-h));
-      overflow: hidden;
-    }
+      .input-transparent {
+        background-color: transparent !important;
+        color: #fff !important;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+      }
+      .input-transparent::placeholder {
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .input-transparent:focus {
+        background-color: transparent !important;
+        color: #fff !important;
+        border-color: #fff;
+        box-shadow: none;
+      }
 
-    .track-topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 16px;
-      flex-wrap: wrap;
-      background: var(--bg-surface);
-      border-bottom: 1px solid var(--border);
-      padding: 12px 24px;
-      flex-shrink: 0;
-    }
-    .room-badge {
-      display: flex; align-items: center; gap: 8px;
-      font-size: 14px; font-weight: 700;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      padding: 6px 14px; border-radius: 20px;
-    }
-    .room-sep  { color: var(--text-muted); }
-    .room-name { color: var(--primary); }
+      .lobby-wrap {
+        min-height: calc(100vh - var(--navbar-h));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+      }
+      .lobby-card {
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-xl);
+        padding: 40px;
+        width: 100%;
+        max-width: 540px;
+        box-shadow: var(--shadow-card);
+        text-align: center;
+      }
+      .lobby-icon {
+        font-size: 48px;
+        margin-bottom: 16px;
+        display: block;
+      }
+      .lobby-card h1 {
+        font-size: 26px;
+        font-weight: 800;
+        margin-bottom: 10px;
+      }
+      .lobby-card > p {
+        font-size: 14px;
+        margin-bottom: 28px;
+        line-height: 1.6;
+      }
 
-    .tb-stats { display: flex; gap: 20px; }
-    .tbs-item { text-align: center; }
-    .tbs-val {
-      display: block;
-      font-size: 18px; font-weight: 800;
-      color: var(--text-primary);
-    }
-    .tbs-green { color: var(--primary) !important; }
-    .tbs-teal  { color: var(--teal) !important; }
-    .tbs-lbl   { font-size: 10px; color: var(--text-muted); text-transform: uppercase; }
-    .tb-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+      .role-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+      .role-btn {
+        background: var(--bg-surface);
+        border: 2px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 16px 12px;
+        text-align: center;
+        cursor: pointer;
+        position: relative;
+        transition: all var(--transition);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        &:hover {
+          border-color: rgba(0, 230, 118, 0.4);
+          background: var(--bg-elevated);
+        }
+        &.selected {
+          border-color: var(--primary);
+          background: var(--primary-soft);
+        }
+      }
+      .rb-icon {
+        font-size: 28px;
+      }
+      .rb-label {
+        font-size: 14px;
+        font-weight: 700;
+      }
+      .rb-desc {
+        font-size: 11px;
+        line-height: 1.4;
+      }
+      .rb-check {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        background: var(--primary);
+        font-size: 11px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
 
-    .gps-error-bar {
-      background: rgba(255,82,82,0.1);
-      border-bottom: 1px solid rgba(255,82,82,0.2);
-      color: var(--red); font-size: 13px;
-      padding: 8px 24px; flex-shrink: 0;
-    }
+      .lobby-form {
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        margin-bottom: 20px;
+      }
+      .lf-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      label {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+      }
+      .eco-input {
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        padding: 10px 14px;
+        border-radius: var(--radius-md);
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color var(--transition);
+        width: 100%;
+        &:focus {
+          outline: none;
+          border-color: var(--primary);
+          box-shadow: 0 0 0 3px var(--primary-soft);
+        }
+      }
 
-    .tracking-body {
-      display: grid;
-      grid-template-columns: 300px 1fr;
-      flex: 1;
-      overflow: hidden;
-    }
+      .join-btn {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 14px;
+      }
+      .join-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
 
-    .track-sidebar {
-      overflow-y: auto;
-      padding: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      background: var(--bg-surface);
-      border-right: 1px solid var(--border);
-    }
-    .ts-card { padding: 14px !important; }
-    .ts-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 10px;
-      font-size: 12px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.5px;
-      color: var(--text-muted);
-    }
+      .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        &.dot-connected {
+          background: var(--primary);
+        }
+        &.dot-connecting {
+          background: var(--amber);
+          animation: pulse 1s infinite;
+        }
+        &.dot-disconnected {
+          background: var(--text-muted);
+        }
+        &.dot-error {
+          background: var(--red);
+        }
+      }
 
-    .my-pos .pos-coord  { font-size: 13px; font-weight: 600; }
-    .my-pos .pos-detail { display: flex; gap: 12px; margin-top: 6px; font-size: 11px; color: var(--text-secondary); }
-    .no-pos             { text-align: center; font-size: 12px; color: var(--text-muted); padding: 8px 0; }
+      /* ── TRACKING ───────────────────────────────────────────── */
+      .tracking-layout {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - var(--navbar-h));
+        overflow: hidden;
+      }
 
-    .peer-item {
-      display: flex; align-items: center; gap: 8px;
-      padding: 8px; border-radius: var(--radius-md);
-      border: 1px solid transparent;
-      transition: all var(--transition); cursor: pointer;
-      &:hover:not(.me) { background: var(--bg-elevated); border-color: var(--border); }
-      &.me { background: var(--primary-soft); border-color: rgba(0,230,118,0.15); cursor: default; }
-    }
-    .peer-avatar {
-      width: 30px; height: 30px; border-radius: 8px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 15px; flex-shrink: 0;
-      &.av-green { background: rgba(0,230,118,0.15); }
-      &.av-teal  { background: rgba(0,180,216,0.15); }
-    }
-    .peer-info    { flex: 1; min-width: 0; }
-    .peer-name    { font-size: 12px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .peer-role    { font-size: 10px; }
-    .you-tag      { font-size: 9px; background: var(--primary-soft); color: var(--primary); padding: 1px 5px; border-radius: 4px; margin-left: 4px; }
-    .peer-speed   { font-size: 11px; color: var(--text-secondary); white-space: nowrap; }
-    .no-peers     { font-size: 12px; color: var(--text-muted); padding: 8px 0; line-height: 1.5; }
+      .track-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        flex-wrap: wrap;
+        background: var(--bg-surface);
+        border-bottom: 1px solid var(--border);
+        padding: 12px 24px;
+        flex-shrink: 0;
+      }
+      .room-badge {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        padding: 6px 14px;
+        border-radius: 20px;
+      }
+      .room-sep {
+        color: var(--text-muted);
+      }
+      .room-name {
+        color: var(--primary);
+      }
 
-    .signal-log-item {
-      padding: 8px; border-radius: var(--radius-md);
-      background: var(--bg-surface); border: 1px solid var(--border);
-      margin-bottom: 6px;
-    }
-    .sli-top   { display: flex; justify-content: space-between; margin-bottom: 3px; }
-    .sli-name  { font-size: 12px; font-weight: 600; }
-    .sli-time  { font-size: 10px; color: var(--text-muted); }
-    .sli-stop  { font-size: 11px; color: var(--text-secondary); }
-    .sli-count { font-size: 11px; color: var(--primary); font-weight: 600; }
+      .tb-stats {
+        display: flex;
+        gap: 20px;
+      }
+      .tbs-item {
+        text-align: center;
+      }
+      .tbs-val {
+        display: block;
+        font-size: 18px;
+        font-weight: 800;
+        color: var(--text-primary);
+      }
+      .tbs-green {
+        color: var(--primary) !important;
+      }
+      .tbs-teal {
+        color: var(--teal) !important;
+      }
+      .tbs-lbl {
+        font-size: 10px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+      }
+      .tb-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
 
-    .map-wrap    { position: relative; overflow: hidden; }
-    .leaflet-map { width: 100%; height: 100%; }
+      .gps-error-bar {
+        background: rgba(255, 82, 82, 0.1);
+        border-bottom: 1px solid rgba(255, 82, 82, 0.2);
+        color: var(--red);
+        font-size: 13px;
+        padding: 8px 24px;
+        flex-shrink: 0;
+      }
 
-    .map-overlay-tl {
-      position: absolute; top: 12px; right: 12px;
-      z-index: 1000; display: flex; flex-direction: column; gap: 4px;
-    }
-    .map-btn {
-      width: 32px; height: 32px; border-radius: 8px;
-      background: var(--bg-card); border: 1px solid var(--border);
-      font-size: 15px; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      &:hover { background: var(--bg-elevated); }
-    }
-    .map-loading {
-      position: absolute; inset: 0;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      background: var(--bg-card); gap: 12px;
-      font-size: 14px; color: var(--text-muted); z-index: 2000;
-    }
-    .ml-spinner {
-      width: 36px; height: 36px; border-radius: 50%;
-      border: 3px solid var(--border); border-top-color: var(--primary);
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
+      .tracking-body {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        flex: 1;
+        overflow: hidden;
+      }
 
-    .modal-overlay {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,0.7); backdrop-filter: blur(4px);
-      z-index: 2000; display: flex; align-items: center; justify-content: center; padding: 20px;
-    }
-    .modal-box {
-      background: var(--bg-card); border: 1px solid var(--border-strong);
-      border-radius: var(--radius-xl); width: 100%; max-width: 440px;
-    }
-    .modal-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 20px 20px 0;
-      h2 { font-size: 17px; }
-    }
-    .close-btn {
-      background: rgba(255,255,255,0.08); border: none;
-      width: 28px; height: 28px; border-radius: 7px;
-      cursor: pointer; font-size: 13px;
-      &:hover { background: rgba(255,255,255,0.15); }
-    }
-    .modal-body   { padding: 16px 20px; display: flex; flex-direction: column; gap: 14px; }
-    .modal-footer {
-      display: flex; justify-content: flex-end; gap: 10px;
-      padding: 14px 20px; border-top: 1px solid var(--border);
-    }
-    .signal-loc-info { padding-top: 4px; }
+      .track-sidebar {
+        overflow-y: auto;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: var(--bg-surface);
+        border-right: 1px solid var(--border);
+      }
+      .ts-card {
+        padding: 14px !important;
+      }
+      .ts-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: var(--text-muted);
+      }
 
-    @media (max-width: 900px) {
-    .track-topbar {
-      display:none;
-    }
-  /* vira bottom sheet */
-  .map-bottom-sheet {
-    position: fixed;
-    left: 0;
-    bottom: 0;
-    width: 100%;
+      .my-pos .pos-coord {
+        font-size: 13px;
+        font-weight: 600;
+      }
+      .my-pos .pos-detail {
+        display: flex;
+        gap: 12px;
+        margin-top: 6px;
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+      .no-pos {
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-muted);
+        padding: 8px 0;
+      }
 
-    height: 35vh;
-    background: var(--bg-card);
-    border-top: 1px solid var(--border);
-    border-radius: 16px 16px 0 0;
+      .peer-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px;
+        border-radius: var(--radius-md);
+        border: 1px solid transparent;
+        transition: all var(--transition);
+        cursor: pointer;
+        &:hover:not(.me) {
+          background: var(--bg-elevated);
+          border-color: var(--border);
+        }
+        &.me {
+          background: var(--primary-soft);
+          border-color: rgba(0, 230, 118, 0.15);
+          cursor: default;
+        }
+      }
+      .peer-avatar {
+        width: 30px;
+        height: 30px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 15px;
+        flex-shrink: 0;
+        &.av-green {
+          background: rgba(0, 230, 118, 0.15);
+        }
+        &.av-teal {
+          background: rgba(0, 180, 216, 0.15);
+        }
+      }
+      .peer-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .peer-name {
+        font-size: 12px;
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .peer-role {
+        font-size: 10px;
+      }
+      .you-tag {
+        font-size: 9px;
+        background: var(--primary-soft);
+        color: var(--primary);
+        padding: 1px 5px;
+        border-radius: 4px;
+        margin-left: 4px;
+      }
+      .peer-speed {
+        font-size: 11px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+      }
+      .no-peers {
+        font-size: 12px;
+        color: var(--text-muted);
+        padding: 8px 0;
+        line-height: 1.5;
+      }
 
-    z-index: 1500;
-    transition: height 0.3s ease;
+      .signal-log-item {
+        padding: 8px;
+        border-radius: var(--radius-md);
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        margin-bottom: 6px;
+      }
+      .sli-top {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 3px;
+      }
+      .sli-name {
+        font-size: 12px;
+        font-weight: 600;
+      }
+      .sli-time {
+        font-size: 10px;
+        color: var(--text-muted);
+      }
+      .sli-stop {
+        font-size: 11px;
+        color: var(--text-secondary);
+      }
+      .sli-count {
+        font-size: 11px;
+        color: var(--primary);
+        font-weight: 600;
+      }
 
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+      .map-wrap {
+        position: relative;
+        overflow: hidden;
+      }
+      .leaflet-map {
+        width: 100%;
+        height: 100%;
+      }
 
-  .map-bottom-sheet.expanded {
-    height: 100dvh;
-  }
+      .map-overlay-tl {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .map-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        font-size: 15px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        &:hover {
+          background: var(--bg-elevated);
+        }
+      }
+      .map-loading {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: var(--bg-card);
+        gap: 12px;
+        font-size: 14px;
+        color: var(--text-muted);
+        z-index: 2000;
+      }
+      .ml-spinner {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 3px solid var(--border);
+        border-top-color: var(--primary);
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
 
-  /* barrinha */
-  .sheet-handle {
-    width: 40px;
-    height: 5px;
-    background: var(--text-muted);
-    border-radius: 10px;
-    margin: 8px auto;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.7);
+        backdrop-filter: blur(4px);
+        z-index: 2000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .modal-box {
+        background: var(--bg-card);
+        border: 1px solid var(--border-strong);
+        border-radius: var(--radius-xl);
+        width: 100%;
+        max-width: 440px;
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px 20px 0;
+        h2 {
+          font-size: 17px;
+        }
+      }
+      .close-btn {
+        background: rgba(255, 255, 255, 0.08);
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 7px;
+        cursor: pointer;
+        font-size: 13px;
+        &:hover {
+          background: rgba(255, 255, 255, 0.15);
+        }
+      }
+      .modal-body {
+        padding: 16px 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 14px 20px;
+        border-top: 1px solid var(--border);
+      }
+      .signal-loc-info {
+        padding-top: 4px;
+      }
 
-  /* mapa ocupa tudo */
-  .map-bottom-sheet .map-wrap {
-    flex: 1;
-    position: relative;
-  }
+      .map-bottom-sheet {
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        height: 100%; /* ← ocupa a célula do grid */
+      }
 
-  .map-bottom-sheet .leaflet-map {
-    width: 100%;
-    height: 100%;
-  }
+      .map-bottom-sheet .map-wrap {
+        flex: 1;
+        position: relative;
+        overflow: hidden;
+      }
 
-  /* IMPORTANTÍSSIMO: não deixar o mapa duplicado */
-  .tracking-body .map-wrap {
-    display: none;
-  }
+      /* handle só faz sentido no mobile */
+      .sheet-handle {
+        display: none;
+      }
 
-  .map-bottom-sheet .map-wrap {
-    display: block;
-  }
+      @media (max-width: 900px) {
+        .sheet-handle {
+          display: block;
+        }
+        .track-topbar {
+          display: none;
+        }
+        /* vira bottom sheet */
+        .map-bottom-sheet {
+          position: fixed;
+          left: 0;
+          bottom: 0;
+          width: 100%;
 
-  /* espaço pro sheet não cobrir conteúdo */
-  .tracking-body {
-    padding-bottom: 35vh;
-  }
-}
-    }
+            height: 35vh;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            border-radius: 16px 16px 0 0;
+
+            z-index: 1500;
+            transition: height 0.3s ease;
+
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+          }
+
+          .map-bottom-sheet.expanded {
+            height: 100dvh;
+          }
+
+          /* barrinha */
+          .sheet-handle {
+            width: 40px;
+            height: 5px;
+            background: var(--text-muted);
+            border-radius: 10px;
+            margin: 8px auto;
+            cursor: pointer;
+            flex-shrink: 0;
+          }
+
+          /* mapa ocupa tudo */
+          .map-bottom-sheet .map-wrap {
+            flex: 1;
+            position: relative;
+          }
+
+          .map-bottom-sheet .leaflet-map {
+            width: 100%;
+            height: 100%;
+          }
+
+          /* IMPORTANTÍSSIMO: não deixar o mapa duplicado */
+          .tracking-body .map-wrap {
+            display: none;
+          }
+
+          .map-bottom-sheet .map-wrap {
+            display: block;
+          }
+
+          /* espaço pro sheet não cobrir conteúdo */
+          .tracking-body {
+            padding-bottom: 35vh;
+          }
+        }
+      }
     `,
-],
+  ],
 })
 export class TrackingComponent implements OnInit, AfterViewInit, OnDestroy {
   // ── Room info
@@ -922,11 +1182,10 @@ export class TrackingComponent implements OnInit, AfterViewInit, OnDestroy {
     this.signalCount = 1;
   }
 
-
   mapExpanded = false;
 
   toggleMap() {
-   this.mapExpanded = !this.mapExpanded;
+    this.mapExpanded = !this.mapExpanded;
   }
   // ── MAP
   private loadLeaflet(): void {
