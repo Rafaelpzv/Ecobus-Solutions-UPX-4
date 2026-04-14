@@ -23,12 +23,6 @@ import { filter } from 'rxjs/operators';
           <div class="pulse-dot"></div>
           <span>Sistema Ativo</span>
         </div>
-
-        <button class="icon-btn" title="Notificações">
-          🔔
-          <span class="notif-badge">3</span>
-        </button>
-
         <div class="time-display">{{ currentTime() }}</div>
       </div>
     </header>
@@ -36,8 +30,9 @@ import { filter } from 'rxjs/operators';
   styles: [
     `
       .navbar {
+        color:white;
         height: var(--navbar-h);
-        background: var(--bg-surface);
+        background: black;
         border-bottom: 1px solid var(--border);
         display: flex;
         align-items: center;
@@ -52,6 +47,7 @@ import { filter } from 'rxjs/operators';
       .navbar-left {
         display: flex;
         align-items: center;
+        margin-top: 10px;
         gap: 16px;
       }
       .toggle-btn {

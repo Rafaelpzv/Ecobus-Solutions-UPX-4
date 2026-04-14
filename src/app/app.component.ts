@@ -2,20 +2,18 @@ import { Component, OnInit, signal } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
-import { SidebarComponent } from './pages/sidebar.component/sidebar.component';
 import { NavbarComponent } from './pages/navbar.component/navbar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, SidebarComponent, NavbarComponent],
+  imports: [RouterOutlet, CommonModule, NavbarComponent],
   template: `
     @if (isHome()) {
       <router-outlet />
     } @else {
       <div class="app-shell">
-        <app-sidebar [collapsed]="sidebarCollapsed()" (toggleCollapse)="toggleSidebar()" />
-        <div class="main-area" [class.collapsed]="sidebarCollapsed()">
+       <div class="main-area" [class.collapsed]="sidebarCollapsed()">
           <app-navbar [sidebarCollapsed]="sidebarCollapsed()" (toggleSidebar)="toggleSidebar()" />
           <main class="content-area">
             <router-outlet />
@@ -47,6 +45,17 @@ import { NavbarComponent } from './pages/navbar.component/navbar.component';
         flex: 1;
         overflow-y: auto;
         overflow-x: hidden;
+         min-height: calc(100vh - var(--navbar-h));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 32px;
+
+        background-image:
+          radial-gradient(circle at 80% 30%, rgba(255, 0, 0, 0.6), transparent 40%),
+          linear-gradient(135deg, #000000 20%, #2b0000 50%, #5a0000 80%, #ff0000 100%);
+
+        background-blend-mode: screen;
       }
       @media (max-width: 768px) {
         .main-area {

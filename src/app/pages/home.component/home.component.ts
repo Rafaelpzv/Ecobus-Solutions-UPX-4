@@ -35,8 +35,7 @@ import { CommonModule } from '@angular/common';
             Mobilidade Urbana Sustentável
           </div>
           <h1 class="hero-title">
-            Transporte público<br />
-            <span class="gradient-text">inteligente e conectado</span>
+            Transporte público
           </h1>
           <p class="hero-desc">
             EcoBus Solutions permite que passageiros sinalizem sua presença nos pontos de ônibus em
@@ -44,10 +43,7 @@ import { CommonModule } from '@angular/common';
             sustentável em Sorocaba.
           </p>
           <div class="hero-actions">
-            <a routerLink="/dashboard" class="btn btn-primary btn-lg">
-              <span>Acessar Dashboard</span> →
-            </a>
-            <a routerLink="/sinais" class="btn btn-outline btn-lg"> Emitir Sinal </a>
+            <button type="button" routerLink="/rastreamento" class="btn btn-outline-light">Emitir Sinal  →</button>
           </div>
           <div class="hero-stats">
             <div class="hero-stat" *ngFor="let stat of heroStats">
@@ -57,39 +53,8 @@ import { CommonModule } from '@angular/common';
           </div>
         </div>
         <div class="hero-visual">
-          <div class="bus-card">
-            <div class="bc-header">
-              <div class="pulse-dot"></div>
-              <span>Linha 307 · Ao Vivo</span>
-              <span class="badge badge-green">Em rota</span>
-            </div>
-            <div class="bc-route">Centro → Vila Hortência</div>
-            <div class="bc-passengers">
-              <div class="pass-row" *ngFor="let p of passengers">
-                <div class="pass-dot" [class.active]="p.active"></div>
-                <span>{{ p.stop }}</span>
-                <span class="pass-count">{{ p.count }} sinal(is)</span>
-              </div>
-            </div>
-            <div class="bc-driver">🚌 Motorista: Carlos Silva · ETA 4 min</div>
-          </div>
-          <div class="mini-map">
-            <div class="map-route"></div>
-            @for (dot of mapDots; track dot.label) {
-              <div
-                class="map-dot"
-                [style.left.%]="dot.x"
-                [style.top.%]="dot.y"
-                [class.active]="dot.active"
-              >
-                <span class="dot-label">{{ dot.label }}</span>
-              </div>
-            }
-            <div class="bus-icon" style="left: 55%; top: 42%">🚌</div>
-          </div>
-        </div>
+       </div>
       </section>
-
       <!-- SOBRE -->
       <section class="section" id="sobre">
         <div class="section-inner">
@@ -172,7 +137,6 @@ import { CommonModule } from '@angular/common';
         <div class="cta-inner">
           <h2>Pronto para transformar a mobilidade urbana?</h2>
           <p>Acesse a plataforma e explore todas as funcionalidades do EcoBus Solutions</p>
-          <a routerLink="/dashboard" class="btn btn-primary btn-lg">Acessar a Plataforma →</a>
         </div>
       </section>
 
@@ -191,10 +155,25 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [
     `
-      .home-page {
+      a{
+        color:white;
+      }
+      body {
+        margin: 0;
+        height: 100vh;
+        background-image:
+        radial-gradient(circle at 80% 30%, rgba(255, 0, 0, 0.6), transparent 40%),
+        linear-gradient(135deg, #000000 20%, #2b0000 50%, #5a0000 80%, #ff0000 100%);
+        background-blend-mode: screen;
+      }
+       .home-page {
+        color:white;
         min-height: 100vh;
-        background: var(--bg-base);
-        overflow-x: hidden;
+        text-align:center;
+        background-image:
+        radial-gradient(circle at 80% 30%, rgba(255, 0, 0, 0.6), transparent 40%),
+        linear-gradient(135deg, #000000 20%, #2b0000 50%, #5a0000 80%, #ff0000 100%);
+         background-blend-mode: screen;
       }
 
       /* ── NAV ── */
@@ -247,6 +226,7 @@ import { CommonModule } from '@angular/common';
       .hero {
         min-height: 100vh;
         display: flex;
+        flex-direction:column;
         align-items: center;
         padding: 120px 40px 80px;
         gap: 60px;
@@ -257,14 +237,6 @@ import { CommonModule } from '@angular/common';
         position: absolute;
         inset: 0;
         pointer-events: none;
-      }
-      .grid-lines {
-        position: absolute;
-        inset: 0;
-        background-image:
-          linear-gradient(rgba(0, 180, 216, 0.05) 1px, transparent 1px),
-          linear-gradient(90deg, rgba(0, 180, 216, 0.05) 1px, transparent 1px);
-        background-size: 40px 40px;
       }
       .glow-orb {
         position: absolute;
@@ -326,10 +298,12 @@ import { CommonModule } from '@angular/common';
         gap: 16px;
         flex-wrap: wrap;
         margin-bottom: 48px;
+        flex-direction: column;
       }
       .hero-stats {
         display: flex;
         gap: 40px;
+        flex-direction:column;
       }
       .hero-stat {
         .hs-value {
