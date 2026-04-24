@@ -18,7 +18,7 @@ import { CommonModule } from '@angular/common';
           <a href="#sobre">Sobre</a>
           <a href="#funcionalidades">Funcionalidades</a>
           <a href="#ods">ODS</a>
-          <a routerLink="/dashboard" class="btn btn-primary btn-sm">Acessar Plataforma</a>
+          <a routerLink="/sala" class="btn btn-primary btn-sm">Acessar Plataforma</a>
         </div>
       </nav>
 
