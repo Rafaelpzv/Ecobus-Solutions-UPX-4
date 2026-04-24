@@ -943,58 +943,57 @@ interface SignalEvent {
           bottom: 0;
           width: 100%;
 
-            height: 35vh;
-            background: var(--bg-card);
-            border-top: 1px solid var(--border);
-            border-radius: 16px 16px 0 0;
+          height: 35vh;
+          background: var(--bg-card);
+          border-top: 1px solid var(--border);
+          border-radius: 16px 16px 0 0;
 
-            z-index: 1500;
-            transition: height 0.3s ease;
+          z-index: 1500;
+          transition: height 0.3s ease;
 
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-          }
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+        }
 
-          .map-bottom-sheet.expanded {
-            height: 100dvh;
-          }
+        .map-bottom-sheet.expanded {
+          height: 100dvh;
+        }
 
-          /* barrinha */
-          .sheet-handle {
-            width: 40px;
-            height: 5px;
-            background: var(--text-muted);
-            border-radius: 10px;
-            margin: 8px auto;
-            cursor: pointer;
-            flex-shrink: 0;
-          }
+        /* barrinha */
+        .sheet-handle {
+          width: 40px;
+          height: 5px;
+          background: var(--text-muted);
+          border-radius: 10px;
+          margin: 8px auto;
+          cursor: pointer;
+          flex-shrink: 0;
+        }
 
-          /* mapa ocupa tudo */
-          .map-bottom-sheet .map-wrap {
-            flex: 1;
-            position: relative;
-          }
+        /* mapa ocupa tudo */
+        .map-bottom-sheet .map-wrap {
+          flex: 1;
+          position: relative;
+        }
 
-          .map-bottom-sheet .leaflet-map {
-            width: 100%;
-            height: 100%;
-          }
+        .map-bottom-sheet .leaflet-map {
+          width: 100%;
+          height: 100%;
+        }
 
-          /* IMPORTANTÍSSIMO: não deixar o mapa duplicado */
-          .tracking-body .map-wrap {
-            display: none;
-          }
+        /* IMPORTANTÍSSIMO: não deixar o mapa duplicado */
+        .tracking-body .map-wrap {
+          display: none;
+        }
 
-          .map-bottom-sheet .map-wrap {
-            display: block;
-          }
+        .map-bottom-sheet .map-wrap {
+          display: block;
+        }
 
-          /* espaço pro sheet não cobrir conteúdo */
-          .tracking-body {
-            padding-bottom: 35vh;
-          }
+        /* espaço pro sheet não cobrir conteúdo */
+        .tracking-body {
+          padding-bottom: 35vh;
         }
       }
     `,
@@ -1229,6 +1228,7 @@ export class TrackingComponent implements OnInit, AfterViewInit, OnDestroy {
       html: `<div style="background:${color}22;border:2px solid ${color};border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:18px;">${emoji}</div>`,
       iconSize: [36, 36],
       iconAnchor: [18, 18],
+      className: '', // ← remove o fundo branco padrão do Leaflet
     });
   }
 

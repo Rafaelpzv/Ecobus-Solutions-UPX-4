@@ -34,16 +34,14 @@ import { CommonModule } from '@angular/common';
             <div class="pulse-dot"></div>
             Mobilidade Urbana Sustentável
           </div>
-          <h1 class="hero-title">
-            Transporte público
-          </h1>
+          <h1 class="hero-title">Transporte público</h1>
           <p class="hero-desc">
             EcoBus Solutions permite que passageiros sinalizem sua presença nos pontos de ônibus em
             tempo real, conectando motoristas e passageiros para uma mobilidade mais eficiente e
             sustentável em Sorocaba.
           </p>
           <div class="hero-actions">
-            <button type="button" routerLink="/rastreamento" class="btn btn-outline-light">Emitir Sinal  →</button>
+            <button class="btn btn-outline-light" routerLink="/sala">Emitir Sinal →</button>
           </div>
           <div class="hero-stats">
             <div class="hero-stat" *ngFor="let stat of heroStats">
@@ -52,8 +50,7 @@ import { CommonModule } from '@angular/common';
             </div>
           </div>
         </div>
-        <div class="hero-visual">
-       </div>
+        <div class="hero-visual"></div>
       </section>
       <!-- SOBRE -->
       <section class="section" id="sobre">
@@ -155,25 +152,25 @@ import { CommonModule } from '@angular/common';
   `,
   styles: [
     `
-      a{
-        color:white;
+      a {
+        color: white;
       }
       body {
         margin: 0;
         height: 100vh;
         background-image:
-        radial-gradient(circle at 80% 30%, rgba(255, 0, 0, 0.6), transparent 40%),
-        linear-gradient(135deg, #000000 20%, #2b0000 50%, #5a0000 80%, #ff0000 100%);
+          radial-gradient(circle at 80% 30%, rgba(255, 0, 0, 0.6), transparent 40%),
+          linear-gradient(135deg, #000000 20%, #2b0000 50%, #5a0000 80%, #ff0000 100%);
         background-blend-mode: screen;
       }
-       .home-page {
-        color:white;
+      .home-page {
+        color: white;
         min-height: 100vh;
-        text-align:center;
+        text-align: center;
         background-image:
-        radial-gradient(circle at 80% 30%, rgba(255, 0, 0, 0.6), transparent 40%),
-        linear-gradient(135deg, #000000 20%, #2b0000 50%, #5a0000 80%, #ff0000 100%);
-         background-blend-mode: screen;
+          radial-gradient(circle at 80% 30%, rgba(255, 0, 0, 0.6), transparent 40%),
+          linear-gradient(135deg, #000000 20%, #2b0000 50%, #5a0000 80%, #ff0000 100%);
+        background-blend-mode: screen;
       }
 
       /* ── NAV ── */
@@ -226,7 +223,7 @@ import { CommonModule } from '@angular/common';
       .hero {
         min-height: 100vh;
         display: flex;
-        flex-direction:column;
+        flex-direction: column;
         align-items: center;
         padding: 120px 40px 80px;
         gap: 60px;
@@ -303,7 +300,7 @@ import { CommonModule } from '@angular/common';
       .hero-stats {
         display: flex;
         gap: 40px;
-        flex-direction:column;
+        flex-direction: column;
       }
       .hero-stat {
         .hs-value {
