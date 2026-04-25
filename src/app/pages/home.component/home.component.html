@@ -1,0 +1,178 @@
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,400;0,600;0,700;0,800;0,900;1,800&family=DM+Sans:wght@400;500&display=swap"
+  rel="stylesheet"
+/>
+<div class="home-page">
+  <div class="hero-mesh" aria-hidden="true">
+    <div class="hblob hblob-1"></div>
+    <div class="hblob hblob-2"></div>
+    <div class="hblob hblob-3"></div>
+    <div class="hblob hblob-4"></div>
+    <div class="hblob hblob-5"></div>
+    <div class="hero-mesh-grid"></div>
+    <div class="hero-mesh-vignette"></div>
+  </div>
+
+  <!-- HERO -->
+  <!-- Animated gradient mesh background -->
+  <div class="mesh-bg" aria-hidden="true">
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+    <div class="blob blob-4"></div>
+    <div class="blob blob-5"></div>
+    <div class="mesh-grid"></div>
+    <div class="mesh-vignette"></div>
+  </div>
+
+  <!-- Hero section -->
+  <section class="hero">
+    <!-- Fundo animado — fica dentro do .hero, não interfere com o resto da página -->
+
+    <!-- Conteúdo fica acima do fundo -->
+    <div class="hero-content">
+      <div class="h-badge">
+        <div class="h-pulse"></div>
+        Mobilidade Urbana Sustentável
+      </div>
+
+      <h1 class="h-title">Transporte público <span class="h-title-accent">inteligente</span></h1>
+      <p class="h-title">para Sorocaba</p>
+
+      <p class="h-desc">
+        EcoBus Solutions conecta passageiros e motoristas em tempo real — sinalizando presença nos
+        pontos e tornando cada viagem mais eficiente e sustentável.
+      </p>
+
+      <div class="h-ctas">
+        <a class="h-btn h-btn-primary" routerLink="/sala">
+          Emitir Sinal <span class="h-btn-arrow">→</span>
+        </a>
+        <a class="h-btn h-btn-ghost" href="#sobre">
+          Saiba Mais <span class="h-btn-arrow">↓</span>
+        </a>
+      </div>
+
+      <div class="h-stats">
+        <div class="h-stat">
+          <span class="h-stat-val">1.2K</span>
+          <span class="h-stat-lbl">Sinais emitidos</span>
+        </div>
+        <div class="h-divider"></div>
+        <div class="h-stat">
+          <span class="h-stat-val">98%</span>
+          <span class="h-stat-lbl">Embarques bem-sucedidos</span>
+        </div>
+        <div class="h-divider"></div>
+        <div class="h-stat">
+          <span class="h-stat-val">5</span>
+          <span class="h-stat-lbl">Rotas ativas</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-scroll" aria-hidden="true">
+      <div class="h-scroll-track"><div class="h-scroll-thumb"></div></div>
+      <span>Scroll</span>
+    </div>
+  </section>
+
+  <!-- SOBRE -->
+  <section class="section" id="sobre">
+    <div class="section-inner">
+      <div class="section-tag">O Projeto</div>
+      <h2 class="section-title">O que é o EcoBus Solutions?</h2>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>
+            O EcoBus Solutions é uma aplicação web voltada à melhoria da comunicação no transporte
+            público e fretado, permitindo a interação direta entre passageiros nos pontos de
+            embarque e os responsáveis pela operação dos veículos.
+          </p>
+          <p>
+            Desenvolvido como projeto de extensão em Mobilidade e Urbanização Sustentável no Centro
+            Universitário FACENS — Sorocaba, SP — 2026.
+          </p>
+          <div class="team-grid">
+            @for (member of team; track member.name) {
+              <div class="team-card">
+                <div class="team-avatar">{{ member.initials }}</div>
+                <div>
+                  <div class="team-name">{{ member.name }}</div>
+                  <div class="team-role">{{ member.role }}</div>
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+        <div class="problem-cards">
+          @for (p of problems; track p.title) {
+            <div class="problem-card">
+              <span class="pc-icon">{{ p.icon }}</span>
+              <div>
+                <div class="pc-title">{{ p.title }}</div>
+                <div class="pc-desc">{{ p.desc }}</div>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FUNCIONALIDADES -->
+  <section class="section alt" id="funcionalidades">
+    <div class="section-inner">
+      <div class="section-tag">Plataforma</div>
+      <h2 class="section-title">Funcionalidades Principais</h2>
+      <div class="feat-grid">
+        @for (feat of features; track feat.title) {
+          <div class="feat-card">
+            <div class="feat-icon">{{ feat.icon }}</div>
+            <h3>{{ feat.title }}</h3>
+            <p>{{ feat.desc }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- ODS -->
+  <section class="section" id="ods">
+    <div class="section-inner">
+      <div class="section-tag">Impacto Global</div>
+      <h2 class="section-title">Alinhamento com as ODS</h2>
+      <div class="ods-grid">
+        @for (ods of odsItems; track ods.number) {
+          <div class="ods-card">
+            <div class="ods-number" [style.color]="ods.color">ODS {{ ods.number }}</div>
+            <div class="ods-title">{{ ods.title }}</div>
+            <div class="ods-desc">{{ ods.desc }}</div>
+          </div>
+        }
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="cta-inner">
+      <h2>Pronto para transformar a mobilidade urbana?</h2>
+      <p>Acesse a plataforma e explore todas as funcionalidades do EcoBus Solutions</p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-brand"><span>🚌</span> <strong>EcoBus Solutions</strong></div>
+      <p>Projeto de Extensão — UPX 4 · FACENS · Sorocaba, SP · 2026</p>
+      <p class="footer-members">
+        Daniel H. da Silva · Erik W. de Mattos · Iago A. M. Monaco · Kelvin H. Garrido · Rafael P.
+        Viana
+      </p>
+    </div>
+  </footer>
+</div>

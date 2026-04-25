@@ -1,0 +1,137 @@
+<div class="lobby-wrap">
+  <!-- Background -->
+  <div class="entry-bg">
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="bg-grid"></div>
+  </div>
+
+  <div class="lobby-card">
+    <!-- Header -->
+    <div class="card-header">
+      <a class="back-link" (click)="goBack()">← Início</a>
+      <div class="entry-logo">
+        <span>🚌</span>
+        <span class="logo-text">EcoBus <strong>Solutions</strong></span>
+      </div>
+    </div>
+
+    <div class="lobby-icon">📡</div>
+    <h1>Entrar em uma Sala</h1>
+    <p class="card-subtitle">
+      Compartilhe sua localização em tempo real com sua equipe. Escolha seu papel e entre em uma
+      sala.
+    </p>
+
+    <!-- Role -->
+    <div class="role-row">
+      <button
+        class="role-btn"
+        [class.selected]="chosenRole() === 'driver'"
+        (click)="chosenRole.set('driver')"
+      >
+        <span class="rb-icon">🚌</span>
+        <span class="rb-label">Motorista</span>
+        <span class="rb-desc">Compartilha localização<br />com passageiros</span>
+        @if (chosenRole() === 'driver') {
+          <div class="rb-check">✓</div>
+        }
+      </button>
+      <button
+        class="role-btn"
+        [class.selected]="chosenRole() === 'passenger'"
+        (click)="chosenRole.set('passenger')"
+      >
+        <span class="rb-icon">🧍</span>
+        <span class="rb-label">Passageiro</span>
+        <span class="rb-desc">Acompanha motorista<br />no mapa</span>
+        @if (chosenRole() === 'passenger') {
+          <div class="rb-check">✓</div>
+        }
+      </button>
+    </div>
+
+    <!-- Form -->
+    <div class="lobby-form">
+      <div class="lf-group">
+        <label>Seu nome <span class="optional">(opcional)</span></label>
+        <input
+          type="text"
+          class="eco-input"
+          placeholder="ex: Carlos Silva"
+          [(ngModel)]="nameInput"
+          maxlength="30"
+        />
+      </div>
+      <div class="lf-group">
+        <label>Código da sala</label>
+        <div class="code-wrap">
+          <span class="code-prefix">🏷️</span>
+          <input
+            type="text"
+            class="eco-input code-input"
+            [class.error]="validationError()"
+            [class.success]="codeInput().length > 2 && !validationError()"
+            placeholder="ex: linha-307"
+            [ngModel]="codeInput()"
+            (ngModelChange)="codeInput.set($event); onCodeChange($event)"
+            (keydown.enter)="enter()"
+            maxlength="40"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="dice-btn" (click)="generateCode()" title="Gerar código aleatório">
+            🎲
+          </button>
+        </div>
+        @if (validationError()) {
+          <div class="field-error">⚠️ {{ validationError() }}</div>
+        }
+        @if (codeInput().length > 2 && !validationError()) {
+          <div class="share-hint">
+            <span>💡</span>
+            <span
+              >Compartilhe o código <strong>{{ normalizedCode() }}</strong> com sua equipe</span
+            >
+          </div>
+        }
+        <div class="code-hint">Letras, números, hífens e underlines. Mín. 3 caracteres.</div>
+      </div>
+    </div>
+
+    <button class="join-btn" [disabled]="!canEnter()" [class.loading]="loading()" (click)="enter()">
+      @if (loading()) {
+        <span class="btn-spinner"></span>
+        Conectando...
+      } @else {
+        Entrar na Sala →
+      }
+    </button>
+
+    <!-- Recent rooms -->
+    @if (recentRooms().length > 0) {
+      <div class="recent-section">
+        <div class="recent-header">
+          <span class="recent-title">Salas recentes</span>
+          <button class="clear-btn" (click)="clearRecent()">Limpar</button>
+        </div>
+        @for (room of recentRooms(); track room.code) {
+          <div class="recent-item" (click)="useRecent(room)">
+            <div class="ri-icon">{{ room.role === 'driver' ? '🚌' : '🧍' }}</div>
+            <div class="ri-info">
+              <div class="ri-code">{{ room.code }}</div>
+              <div class="ri-meta">
+                {{ room.role === 'driver' ? 'Motorista' : 'Passageiro' }}
+                @if (room.name) {
+                  · {{ room.name }}
+                }
+                · {{ formatTime(room.lastUsed) }}
+              </div>
+            </div>
+            <span class="ri-arrow">→</span>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</div>

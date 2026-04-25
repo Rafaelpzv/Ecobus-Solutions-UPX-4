@@ -2,19 +2,17 @@ import { Component, OnInit, signal } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs/operators';
-import { NavbarComponent } from './pages/navbar.component/navbar.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, CommonModule, NavbarComponent],
+  imports: [RouterOutlet, CommonModule],
   template: `
     @if (isHome()) {
       <router-outlet />
     } @else {
       <div class="app-shell">
-       <div class="main-area" [class.collapsed]="sidebarCollapsed()">
-          <app-navbar [sidebarCollapsed]="sidebarCollapsed()" (toggleSidebar)="toggleSidebar()" />
+        <div class="main-area" [class.collapsed]="sidebarCollapsed()">
           <main class="content-area">
             <router-outlet />
           </main>
@@ -45,7 +43,7 @@ import { NavbarComponent } from './pages/navbar.component/navbar.component';
         flex: 1;
         overflow-y: auto;
         overflow-x: hidden;
-         min-height: calc(100vh - var(--navbar-h));
+        min-height: calc(100vh - var(--navbar-h));
         display: flex;
         align-items: center;
         justify-content: center;
