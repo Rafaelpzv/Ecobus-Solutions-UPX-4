@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { RoomService, RoomMeta } from '../../services/room.service';
+import { AdminService } from '../../services/admin.service';
 
 @Component({
   selector: 'app-room-entry',
@@ -32,6 +33,7 @@ export class RoomEntryComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private roomService: RoomService,
+    private adminService: AdminService,
   ) {}
 
   ngOnInit(): void {
@@ -51,7 +53,7 @@ export class RoomEntryComponent implements OnInit {
     this.validationError.set(null);
   }
 
-  enter(): void {
+  async enter(): Promise<void> {
     if (!this.canEnter()) return;
 
     const validation = this.roomService.validateCode(this.codeInput());
@@ -62,6 +64,12 @@ export class RoomEntryComponent implements OnInit {
 
     this.loading.set(true);
     const normalized = this.roomService.normalizeCode(this.codeInput());
+
+    await this.adminService.upsertRoom(normalized, {
+      display_name: normalized,
+      is_private: false,
+    });
+
     const name =
       this.nameInput.trim() || (this.chosenRole() === 'driver' ? 'Motorista' : 'Passageiro');
 

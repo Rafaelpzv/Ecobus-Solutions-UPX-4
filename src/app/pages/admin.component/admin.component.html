@@ -1,0 +1,240 @@
+<!-- ── LOGIN ──────────────────────────────────────────────────────────── -->
+@if (!loggedIn()) {
+  <div class="login-page">
+    <div class="login-bg">
+      <div class="bg-orb orb-1"></div>
+      <div class="bg-orb orb-2"></div>
+      <div class="bg-grid"></div>
+    </div>
+    <div class="login-card">
+      <div class="login-icon">🔐</div>
+      <h1>Painel Administrativo</h1>
+      <p class="login-subtitle">Acesso restrito — EcoBus Solutions</p>
+
+      @if (loginError()) {
+        <div class="login-error">⚠️ {{ loginError() }}</div>
+      }
+
+      <div class="login-form">
+        <div class="field-group">
+          <label>Usuário</label>
+          <input
+            class="adm-input"
+            type="text"
+            [(ngModel)]="loginUser"
+            placeholder="usuário"
+            (keydown.enter)="login()"
+            autocomplete="username"
+          />
+        </div>
+        <div class="field-group">
+          <label>Senha</label>
+          <input
+            class="adm-input"
+            type="password"
+            [(ngModel)]="loginPass"
+            placeholder="••••••••"
+            (keydown.enter)="login()"
+            autocomplete="current-password"
+          />
+        </div>
+      </div>
+
+      <button class="login-btn" (click)="login()">Entrar →</button>
+      <button class="back-link" (click)="router.navigate(['/'])">← Voltar ao início</button>
+    </div>
+  </div>
+}
+
+<!-- ── DASHBOARD ──────────────────────────────────────────────────────── -->
+@if (loggedIn()) {
+  <div class="dash-page">
+    <!-- Top nav -->
+    <header class="dash-nav">
+      <div class="nav-brand">
+        <span>🚌</span>
+        <span>EcoBus <strong>Admin</strong></span>
+      </div>
+      <div class="nav-right">
+        <span class="nav-badge">Administrador</span>
+        <button class="logout-btn" (click)="logout()">Sair</button>
+      </div>
+    </header>
+
+    <div class="dash-body">
+      <!-- Stats -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-val">{{ rooms().length }}</div>
+          <div class="stat-lbl">Total de salas</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val green">{{ activeRooms() }}</div>
+          <div class="stat-lbl">Ativas (30min)</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val amber">{{ privateRooms() }}</div>
+          <div class="stat-lbl">Privadas</div>
+        </div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="table-toolbar">
+        <h2 class="section-title">🚪 Salas</h2>
+        <div class="toolbar-right">
+          <input
+            class="search-input"
+            type="text"
+            [(ngModel)]="searchTerm"
+            placeholder="🔍 Buscar sala..."
+          />
+          <button class="refresh-btn" (click)="loadRooms()" [disabled]="loading()">
+            {{ loading() ? '...' : '↺ Atualizar' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      @if (loading() && rooms().length === 0) {
+        <div class="empty-state">
+          <div class="spinner"></div>
+          <span>Carregando salas...</span>
+        </div>
+      } @else if (filteredRooms().length === 0) {
+        <div class="empty-state">
+          <span class="empty-icon">📭</span>
+          <span>Nenhuma sala encontrada</span>
+        </div>
+      } @else {
+        <div class="rooms-list">
+          @for (room of filteredRooms(); track room.code) {
+            <div class="room-card" [class.expanded]="room.expanded">
+              <!-- Room header row -->
+              <div class="room-row" (click)="toggleExpand(room)">
+                <div class="room-main">
+                  <div class="room-code-badge">
+                    {{ room.is_private ? '🔒' : '🚪' }}
+                    <span class="rcode">{{ room.code }}</span>
+                  </div>
+                  @if (room.display_name) {
+                    <span class="room-alias">{{ room.display_name }}</span>
+                  }
+                </div>
+
+                <div class="room-meta">
+                  @if (room.is_private) {
+                    <span class="badge private-badge">Privada</span>
+                  }
+                  <span class="last-active">{{ formatTime(room.last_active) }}</span>
+                </div>
+
+                <div class="room-actions" (click)="$event.stopPropagation()">
+                  <button class="act-btn rename-btn" (click)="openRename(room)" title="Renomear">
+                    ✏️
+                  </button>
+                  <button
+                    class="act-btn privacy-btn"
+                    (click)="openPrivacy(room)"
+                    title="Privacidade"
+                  >
+                    {{ room.is_private ? '🔓' : '🔒' }}
+                  </button>
+                  <button
+                    class="act-btn close-btn"
+                    (click)="confirmClose(room)"
+                    title="Fechar sala"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div class="expand-arrow" [class.open]="room.expanded">›</div>
+              </div>
+
+              <!-- Expanded: users -->
+              @if (room.expanded) {
+                <div class="room-users">
+                  @if (!room.usersLoaded) {
+                    <div class="users-loading">
+                      <div class="spinner-sm"></div>
+                      Carregando usuários...
+                    </div>
+                  } @else if (room.users.length === 0) {
+                    <div class="users-empty">Nenhum usuário ativo no momento</div>
+                  } @else {
+                    <div class="users-list">
+                      @for (user of room.users; track user.clientId) {
+                        <div class="user-row">
+                          <div class="user-avatar" [class.driver]="user.role === 'driver'">
+                            {{ user.role === 'driver' ? '🚌' : '🧍' }}
+                          </div>
+                          <div class="user-info">
+                            <span class="user-name">{{ user.name }}</span>
+                            <span class="user-role">{{
+                              user.role === 'driver' ? 'Motorista' : 'Passageiro'
+                            }}</span>
+                          </div>
+                          <div class="user-id">{{ user.clientId?.slice(0, 8) }}...</div>
+                          <button
+                            class="kick-btn"
+                            (click)="kick(room.code, user.clientId)"
+                            [disabled]="kicking()"
+                          >
+                            Expulsar
+                          </button>
+                        </div>
+                      }
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+          }
+        </div>
+      }
+    </div>
+  </div>
+}
+<!-- ── TOAST ──────────────────────────────────────────────────────────── -->
+@if (toast()) {
+  <div class="toast" [class.error]="toastError()">{{ toast() }}</div>
+}
+
+<div *ngIf="showRenameModal()" class="modal-backdrop">
+  <div class="custom-modal">
+    <h2>Renomear sala</h2>
+
+    <input [(ngModel)]="renameValue" placeholder="Novo nome da sala" />
+
+    <div class="actions">
+      <button (click)="showRenameModal.set(false)">Cancelar</button>
+      <button (click)="doRename()">Renomear</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showPrivateModal()" class="modal-backdrop">
+  <div class="custom-modal">
+    <h2>Privar sala</h2>
+
+    <p>Deseja tornar esta sala privada?</p>
+
+    <div class="actions">
+      <button (click)="showPrivateModal.set(false)">Cancelar</button>
+      <button (click)="doSetPrivacy()">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div *ngIf="showDeleteModal()" class="modal-backdrop">
+  <div class="custom-modal">
+    <h2>Encerrar sala</h2>
+
+    <p>Todos os usuários serão removidos. Continuar?</p>
+
+    <div class="actions">
+      <button (click)="showDeleteModal.set(false)">Cancelar</button>
+      <button (click)="doClose()">Encerrar</button>
+    </div>
+  </div>
+</div>

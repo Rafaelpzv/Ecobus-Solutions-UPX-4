@@ -1,0 +1,222 @@
+@if (pageState() === 'loading') {
+  <div class="state-screen">
+    <div class="state-card">
+      <div class="spinner-ring"></div>
+      <h3>Conectando à sala</h3>
+      <p class="state-code">{{ roomCode() }}</p>
+      <p class="state-hint">Estabelecendo conexão em tempo real…</p>
+    </div>
+  </div>
+}
+
+@if (pageState() === 'error') {
+  <div class="state-screen">
+    <div class="state-card error-card">
+      <div class="state-icon">⚠️</div>
+      <h3>Falha na conexão</h3>
+      <p class="state-hint">{{ errorMessage() }}</p>
+      <button class="retry-btn" (click)="reconnect()">Tentar novamente</button>
+      <button class="back-btn" (click)="leave()">← Voltar</button>
+    </div>
+  </div>
+}
+
+@if (pageState() === 'connected') {
+  <div class="tracking-shell">
+    <header class="topbar">
+      <div class="tb-left">
+        <button class="leave-btn" (click)="leave()" title="Sair da sala">←</button>
+        <div class="room-info">
+          <div class="room-code">{{ roomCode() }}</div>
+          <div class="room-meta">
+            <span class="role-tag" [class.driver]="myRole() === 'driver'">
+              {{ myRole() === 'driver' ? '🚌 Motorista' : '🧍 Passageiro' }}
+            </span>
+            <span class="dot-sep">·</span>
+            <span class="peer-count">{{ totalInRoom() }} na sala</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tb-center">
+        <div class="latency-chip" [class.good]="latency() < 200">
+          <span class="latency-dot"></span>
+          {{ latency() }}ms
+        </div>
+      </div>
+
+      <div class="tb-right">
+        @if (!tracking()) {
+          <button class="action-btn gps-btn" (click)="startTracking()">📍 GPS</button>
+        } @else {
+          <button class="action-btn stop-btn" (click)="stopTracking()">⏹ GPS</button>
+        }
+        @if (myRole() === 'passenger') {
+          <button class="action-btn signal-btn" (click)="showSignalModal.set(true)">🚨</button>
+        }
+        <button class="action-btn share-btn" (click)="copyRoomCode()" title="Copiar código">
+          {{ copied() ? '✓' : '🔗' }}
+        </button>
+      </div>
+    </header>
+
+    @if (gpsError()) {
+      <div class="gps-banner">⚠️ {{ gpsError() }}</div>
+    }
+
+    <div class="main-body">
+      <aside class="sidebar">
+        <div class="sidebar-card">
+          <div class="sc-header">
+            <span class="sc-title">Minha Posição</span>
+            @if (tracking()) {
+              <span class="live-badge">
+                <span class="live-dot"></span>
+                LIVE
+              </span>
+            }
+          </div>
+          @if (myPosition()) {
+            <div class="pos-grid">
+              <div class="pos-item">
+                <span class="pos-label">Lat</span>
+                <span class="pos-val">{{ myPosition()!.lat | number: '1.4-4' }}°</span>
+              </div>
+              <div class="pos-item">
+                <span class="pos-label">Lng</span>
+                <span class="pos-val">{{ myPosition()!.lng | number: '1.4-4' }}°</span>
+              </div>
+              <div class="pos-item">
+                <span class="pos-label">Vel.</span>
+                <span class="pos-val">{{ myPosition()!.speed * 3.6 | number: '1.0-0' }} km/h</span>
+              </div>
+              <div class="pos-item">
+                <span class="pos-label">Prec.</span>
+                <span class="pos-val">±{{ myPosition()!.accuracy | number: '1.0-0' }}m</span>
+              </div>
+            </div>
+          } @else {
+            <div class="no-gps">
+              <span>GPS inativo</span>
+              <button class="mini-btn" (click)="startTracking()">Ativar</button>
+            </div>
+          }
+        </div>
+
+        <div class="sidebar-card">
+          <div class="sc-header">
+            <span class="sc-title">Na Sala</span>
+            <span class="count-badge">{{ totalInRoom() }}</span>
+          </div>
+
+          <div class="peer-row me-row">
+            <div class="peer-avatar" [class.driver-av]="myRole() === 'driver'">
+              {{ myRole() === 'driver' ? '🚌' : '🧍' }}
+            </div>
+            <div class="peer-details">
+              <span class="peer-name">{{ myDisplayName() }}</span>
+              <span class="you-label">você</span>
+            </div>
+            <div class="peer-status" [class.active]="tracking()"></div>
+          </div>
+
+          @for (peer of peers(); track peer.clientId) {
+            <div class="peer-row" (click)="focusPeer(peer.clientId)">
+              <div class="peer-avatar" [class.driver-av]="peer.role === 'driver'">
+                {{ peer.role === 'driver' ? '🚌' : '🧍' }}
+              </div>
+              <div class="peer-details">
+                <span class="peer-name">{{ peer.name }}</span>
+                <span class="peer-role">{{
+                  peer.role === 'driver' ? 'Motorista' : 'Passageiro'
+                }}</span>
+              </div>
+              <span class="peer-speed">
+                {{ getPeerSpeed(peer.clientId) }}
+              </span>
+            </div>
+          }
+
+          @if (peers().length === 0) {
+            <div class="empty-peers">
+              Ninguém mais na sala.<br />
+              Compartilhe: <strong>{{ roomCode() }}</strong>
+            </div>
+          }
+        </div>
+
+        <div class="sidebar-card signals-card">
+          <div class="sc-header">
+            <span class="sc-title">Sinais</span>
+            @if (signalLog().length > 0) {
+              <span class="alert-badge">{{ signalLog().length }}</span>
+            }
+          </div>
+          @for (sig of signalLog(); track sig.id) {
+            <div class="signal-item">
+              <div class="sig-top">
+                <span class="sig-name">{{ sig.name }}</span>
+                <span class="sig-time">{{ sig.time }}</span>
+              </div>
+              <div class="sig-stop">📍 {{ sig.stop }}</div>
+              <div class="sig-count">{{ sig.count }} passageiro(s)</div>
+            </div>
+          }
+          @if (signalLog().length === 0) {
+            <div class="empty-signals">Nenhum sinal ainda</div>
+          }
+        </div>
+      </aside>
+
+      <div class="map-area">
+        <div #mapContainer class="map-container"></div>
+
+        <div class="map-controls">
+          <button class="map-ctrl-btn" (click)="centerOnMe()" title="Centralizar em mim">⊙</button>
+          <button class="map-ctrl-btn" (click)="fitAll()" title="Ver todos">⤢</button>
+        </div>
+
+        @if (!mapReady()) {
+          <div class="map-loading">
+            <div class="ml-ring"></div>
+            <span>Carregando mapa…</span>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
+
+@if (showSignalModal()) {
+  <div class="modal-overlay" (click)="showSignalModal.set(false)">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-head">
+        <span>🚨 Emitir Sinal</span>
+        <button class="modal-close" (click)="showSignalModal.set(false)">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="field">
+          <label>Nome do ponto</label>
+          <input
+            class="field-input"
+            [(ngModel)]="signalStop"
+            placeholder="ex: Av. São Paulo, 450"
+          />
+        </div>
+        <div class="field">
+          <label>Passageiros</label>
+          <input class="field-input" type="number" [(ngModel)]="signalCount" min="1" max="50" />
+        </div>
+        @if (myPosition()) {
+          <div class="loc-tag ok">📍 GPS ativo — localização será incluída</div>
+        } @else {
+          <div class="loc-tag warn">⚠️ GPS inativo — sem localização</div>
+        }
+      </div>
+      <div class="modal-foot">
+        <button class="modal-cancel" (click)="showSignalModal.set(false)">Cancelar</button>
+        <button class="modal-confirm" (click)="emitSignal()">Enviar Sinal</button>
+      </div>
+    </div>
+  </div>
+}

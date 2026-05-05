@@ -8,7 +8,7 @@ html {
 }
 
 .home-page {
-  position: relative; /* ancora o hero-mesh */
+  position: relative;
   color: white;
   min-height: 100vh;
   text-align: center;
@@ -19,10 +19,6 @@ html {
     linear-gradient(160deg, #060a0f 0%, #1a0000 40%, #3b0000 70%, #060a0f 100%);
 }
 
-/* ═══════════════════════════════════════════
-   MESH — cobre a página toda (position absolute
-   relativo ao .home-page)
-   ═══════════════════════════════════════════ */
 .hero-mesh {
   position: absolute;
   inset: 0;
@@ -182,9 +178,6 @@ html {
   }
 }
 
-/* ═══════════════════════════════════════════
-   NAV
-   ═══════════════════════════════════════════ */
 .top-nav {
   position: fixed;
   top: 0;
@@ -228,9 +221,6 @@ html {
   color: var(--primary);
 }
 
-/* ═══════════════════════════════════════════
-   HERO
-   ═══════════════════════════════════════════ */
 .hero {
   position: relative;
   z-index: 1;
@@ -252,7 +242,6 @@ html {
   align-items: center;
 }
 
-/* Badge */
 .h-badge {
   display: inline-flex;
   align-items: center;
@@ -287,7 +276,6 @@ html {
   }
 }
 
-/* Título */
 .h-title {
   font-family: 'Exo 2', sans-serif;
   font-size: clamp(42px, 7vw, 80px);
@@ -316,7 +304,6 @@ html {
   animation: hfadeUp 0.85s 0.18s ease both;
 }
 
-/* Descrição */
 .h-desc {
   font-size: 16px;
   line-height: 1.76;
@@ -326,7 +313,6 @@ html {
   animation: hfadeUp 0.85s 0.26s ease both;
 }
 
-/* Botões hero */
 .h-ctas {
   display: flex;
   gap: 12px;
@@ -488,9 +474,6 @@ html {
   }
 }
 
-/* ═══════════════════════════════════════════
-   SEÇÕES (ficam acima do mesh)
-   ═══════════════════════════════════════════ */
 .section,
 .cta-section,
 .footer {
@@ -536,7 +519,6 @@ html {
   margin-bottom: 40px;
 }
 
-/* ── Sobre ── */
 .about-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -617,7 +599,6 @@ html {
   color: var(--text-secondary);
 }
 
-/* ── Funcionalidades ── */
 .feat-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -652,7 +633,6 @@ html {
   line-height: 1.6;
 }
 
-/* ── ODS ── */
 .ods-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -683,7 +663,6 @@ html {
   line-height: 1.6;
 }
 
-/* ── CTA ── */
 .cta-section {
   padding: 80px 40px;
   text-align: center;
@@ -702,7 +681,6 @@ html {
   margin-bottom: 32px;
 }
 
-/* ── Footer ── */
 .footer {
   padding: 32px 40px;
   border-top: 1px solid var(--border);
@@ -726,7 +704,6 @@ html {
   font-size: 11px;
 }
 
-/* ── Botão geral (nav) ── */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -755,9 +732,6 @@ html {
   font-size: 12px;
 }
 
-/* ═══════════════════════════════════════════
-   RESPONSIVO
-   ═══════════════════════════════════════════ */
 @media (max-width: 900px) {
   .top-nav {
     padding: 14px 20px;

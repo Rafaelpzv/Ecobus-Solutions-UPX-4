@@ -11,19 +11,50 @@ export type WsRole = 'driver' | 'passenger';
 export class SupabaseService {
   private supabase: SupabaseClient;
   private channel: any;
+  private adminChannel: any; // 👈 NOVO
+  private updatePresence() {
+    const state = this.channel.presenceState();
+
+    const users: any[] = [];
+
+    for (const key in state) {
+      const presences = state[key];
+
+      presences.forEach((p: any) => {
+        users.push({
+          clientId: p.clientId,
+          name: p.name,
+          role: p.role,
+        });
+      });
+    }
+
+    console.log('PEERS ATUALIZADOS:', users);
+
+    this.peers$.next(users);
+  }
 
   status$ = new BehaviorSubject<string>('disconnected');
   peers$ = new BehaviorSubject<any[]>([]);
   location$ = new BehaviorSubject<any>(null);
   signals$ = new BehaviorSubject<any>(null);
 
-  clientId = crypto.randomUUID();
+  // ✅ CLIENT ID FIXO (ESSENCIAL PRO KICK FUNCIONAR)
+  clientId = localStorage.getItem('clientId') ?? crypto.randomUUID();
+
   room: string = '';
   role: WsRole = 'passenger';
   name: string = '';
 
   constructor() {
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+
+    // garante persistência
+    localStorage.setItem('clientId', this.clientId);
+
+    // 👇 cria canal global admin
+    this.adminChannel = this.supabase.channel('admin');
+    this.adminChannel.subscribe();
   }
 
   connect(room: string, role: WsRole, name: string) {
@@ -50,32 +81,35 @@ export class SupabaseService {
       this.signals$.next(payload.payload);
     });
 
+    this.channel.on('broadcast', { event: 'admin' }, (payload: any) => {
+      const data = payload.payload;
+
+      if (data.roomCode !== this.room) return;
+
+      if (data.type === 'kick') {
+        if (data.targetClientId === this.clientId) {
+          this.status$.next('kicked');
+        }
+      }
+      if (data.type === 'room_closed') {
+        this.status$.next('closed');
+      }
+    });
+
     // 🧍 PRESENCE
     this.channel.on('presence', { event: 'sync' }, () => {
-      const state = this.channel.presenceState();
+      this.updatePresence();
+    });
 
-      const users: any[] = [];
+    this.channel.on('presence', { event: 'leave' }, () => {
+      this.updatePresence();
+    });
 
-      for (const key in state) {
-        const presences = state[key];
-
-        presences.forEach((p: any) => {
-          users.push({
-            clientId: p.clientId,
-            name: p.name,
-            role: p.role,
-          });
-        });
-      }
-
-      console.log('PEERS ATUALIZADOS:', users);
-
-      this.peers$.next(users);
+    this.channel.on('presence', { event: 'join' }, () => {
+      this.updatePresence();
     });
 
     this.channel.subscribe((status: string) => {
-      console.log('SUPABASE STATUS:', status);
-
       if (status === 'SUBSCRIBED') {
         this.status$.next('connected');
 
@@ -85,7 +119,7 @@ export class SupabaseService {
             name: this.name,
             role: this.role,
           });
-        }, 200); // ⬅️ aumentei (isso resolve MUITO bug)
+        }, 200);
       }
 
       if (status === 'CHANNEL_ERROR') {
@@ -97,6 +131,25 @@ export class SupabaseService {
       }
     });
   }
+
+  // 📡 ESCUTAR COMANDOS DO ADMIN (KICK / CLOSE)
+  subscribeToAdminCommands(callback: (payload: any) => void) {
+    const adminChannel = this.supabase.channel('admin', {
+      config: {
+        broadcast: { self: false },
+      },
+    });
+
+    adminChannel.on('broadcast', { event: 'admin' }, (payload: any) => {
+      console.log('ADMIN RECEBIDO:', payload);
+      callback(payload);
+    });
+
+    adminChannel.subscribe((status: string) => {
+      console.log('ADMIN CHANNEL STATUS:', status);
+    });
+  }
+
   sendLocation(lat: number, lng: number, speed: number, heading: number) {
     this.channel.send({
       type: 'broadcast',
@@ -113,6 +166,31 @@ export class SupabaseService {
     });
   }
 
+  sendAdminCommand(type: string, payload: any) {
+    this.channel.send({
+      type: 'broadcast',
+      event: 'admin',
+      payload: {
+        type,
+        ...payload,
+      },
+    });
+  }
+  renameRoom(newName: string) {
+    this.sendAdminCommand('rename_room', {
+      name: newName,
+    });
+  }
+
+  togglePrivate(isPrivate: boolean) {
+    this.sendAdminCommand('toggle_private', {
+      private: isPrivate,
+    });
+  }
+
+  closeRoom() {
+    this.sendAdminCommand('close_room', {});
+  }
   sendSignal(stop: string, count: number, lat?: number, lng?: number) {
     this.channel.send({
       type: 'broadcast',
@@ -129,7 +207,11 @@ export class SupabaseService {
   }
 
   disconnect() {
-    this.supabase.removeChannel(this.channel);
+    if (this.channel) {
+      this.channel.untrack(); // 👈 ESSENCIAL
+      this.supabase.removeChannel(this.channel);
+    }
+
     this.status$.next('disconnected');
   }
 }

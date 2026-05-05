@@ -24,8 +24,10 @@ export class RoomService {
   validateCode(code: string): { valid: boolean; error?: string } {
     const trimmed = code.trim();
     if (!trimmed) return { valid: false, error: 'Código não pode ser vazio' };
-    if (trimmed.length < 3) return { valid: false, error: 'Código muito curto (mínimo 3 caracteres)' };
-    if (trimmed.length > 40) return { valid: false, error: 'Código muito longo (máximo 40 caracteres)' };
+    if (trimmed.length < 3)
+      return { valid: false, error: 'Código muito curto (mínimo 3 caracteres)' };
+    if (trimmed.length > 40)
+      return { valid: false, error: 'Código muito longo (máximo 40 caracteres)' };
     if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
       return { valid: false, error: 'Use apenas letras, números, - e _' };
     }

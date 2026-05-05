@@ -1,5 +1,4 @@
 <div class="lobby-wrap">
-  <!-- Background -->
   <div class="entry-bg">
     <div class="bg-orb orb-1"></div>
     <div class="bg-orb orb-2"></div>
@@ -7,7 +6,6 @@
   </div>
 
   <div class="lobby-card">
-    <!-- Header -->
     <div class="card-header">
       <a class="back-link" (click)="goBack()">← Início</a>
       <div class="entry-logo">
@@ -23,7 +21,6 @@
       sala.
     </p>
 
-    <!-- Role -->
     <div class="role-row">
       <button
         class="role-btn"
@@ -51,7 +48,6 @@
       </button>
     </div>
 
-    <!-- Form -->
     <div class="lobby-form">
       <div class="lf-group">
         <label>Seu nome <span class="optional">(opcional)</span></label>
@@ -108,7 +104,6 @@
       }
     </button>
 
-    <!-- Recent rooms -->
     @if (recentRooms().length > 0) {
       <div class="recent-section">
         <div class="recent-header">

@@ -1,0 +1,295 @@
+@if (!joined()) {
+  <div class="lobby-wrap anim-fade-up">
+    <div class="lobby-card">
+      <div class="lobby-icon">📡</div>
+      <h1>Rastreamento ao Vivo</h1>
+      <p>
+        Compartilhe sua localização em tempo real com sua equipe. Escolha seu papel e entre em uma
+        sala.
+      </p>
+
+      <div class="role-row">
+        <button
+          class="role-btn input-transparent"
+          [class.selected]="chosenRole() === 'driver'"
+          (click)="chosenRole.set('driver')"
+        >
+          <span class="rb-icon">🚌</span>
+          <span class="rb-label">Motorista</span>
+          <span class="rb-desc">Compartilha localização<br />com passageiros</span>
+          @if (chosenRole() === 'driver') {
+            <div class="rb-check">✓</div>
+          }
+        </button>
+        <button
+          class="role-btn input-transparent"
+          [class.selected]="chosenRole() === 'passenger'"
+          (click)="chosenRole.set('passenger')"
+        >
+          <span class="rb-icon">🧍</span>
+          <span class="rb-label">Passageiro</span>
+          <span class="rb-desc">Acompanha motorista<br />no mapa</span>
+          @if (chosenRole() === 'passenger') {
+            <div class="rb-check">✓</div>
+          }
+        </button>
+      </div>
+
+      <div class="lobby-form">
+        <div class="lf-group">
+          <label>Seu nome</label>
+          <div class="input-group input-group-sm">
+            <span class="input-group-text input-transparent">Nome</span>
+
+            <input
+              type="text"
+              class="form-control input-transparent"
+              placeholder="ex: Carlos Silva"
+              [ngModel]="myName()"
+              (ngModelChange)="myName.set($event)"
+            />
+          </div>
+        </div>
+        <div class="lf-group">
+          <label>Código da sala</label>
+
+          <div class="input-group">
+            <span class="input-group-text input-transparent">🏷️</span>
+
+            <input
+              type="text"
+              class="form-control input-transparent"
+              placeholder="ex: linha-307"
+              [ngModel]="roomCode()"
+              (ngModelChange)="roomCode.set($event)"
+            />
+
+            <button class="btn btn-transparent" type="button" (click)="randomRoom()">🎲</button>
+          </div>
+        </div>
+      </div>
+
+      <button
+        class="btn btn-primary btn-lg join-btn btn-transparent"
+        [disabled]="!canJoin()"
+        (click)="join()"
+      >
+        Entrar na Sala →
+      </button>
+    </div>
+  </div>
+}
+
+@if (joined()) {
+  <div class="tracking-layout anim-fade">
+    <div class="track-topbar">
+      <div class="tb-room">
+        <div class="room-badge">
+          <span class="room-icon">{{ myRole() === 'driver' ? '🚌' : '🧍' }}</span>
+          <span>{{ myRole() === 'driver' ? 'Motorista' : 'Passageiro' }}</span>
+          <span class="room-sep">·</span>
+          <span class="room-name">{{ currentRoom() }}</span>
+        </div>
+      </div>
+
+      <div class="tb-stats">
+        <div class="tbs-item">
+          <span class="tbs-val">{{ peers().length }}</span>
+          <span class="tbs-lbl">Peers</span>
+        </div>
+        <div class="tbs-item">
+          <span class="tbs-val tbs-green">{{ roomInfo().drivers }}</span>
+          <span class="tbs-lbl">Motoristas</span>
+        </div>
+        <div class="tbs-item">
+          <span class="tbs-val tbs-teal">{{ roomInfo().passengers }}</span>
+          <span class="tbs-lbl">Passageiros</span>
+        </div>
+        <div class="tbs-item">
+          <span class="tbs-val">{{ latency() }}ms</span>
+          <span class="tbs-lbl">Latência</span>
+        </div>
+      </div>
+
+      <div class="tb-actions">
+        @if (!tracking()) {
+          <button class="btn btn-primary btn-sm" (click)="startTracking()">📍 Iniciar GPS</button>
+        } @else {
+          <button class="btn btn-danger btn-sm" (click)="stopTracking()">⏹ Parar GPS</button>
+        }
+        @if (myRole() === 'passenger') {
+          <button class="btn btn-outline btn-sm" (click)="showSignalModal.set(true)">
+            🚨 Emitir Sinal
+          </button>
+        }
+        <button class="btn btn-ghost btn-sm" (click)="leave()">Sair</button>
+      </div>
+    </div>
+
+    @if (gpsError()) {
+      <div class="gps-error-bar">⚠️ {{ gpsError() }}</div>
+    }
+
+    <div class="tracking-body">
+      <div class="track-sidebar">
+        <div class="card bg-dark ts-card">
+          <div class="ts-header">
+            <span>Minha Posição</span>
+            <div class="pulse-dot" [style.display]="tracking() ? 'block' : 'none'"></div>
+          </div>
+          @if (myPosition()) {
+            <div class="my-pos">
+              <div class="pos-coord">📍 {{ myPosition()!.lat | number: '1.5-5' }}°</div>
+              <div class="pos-coord">📍 {{ myPosition()!.lng | number: '1.5-5' }}°</div>
+              <div class="pos-detail">
+                <span>⚡ {{ myPosition()!.speed * 3.6 | number: '1.0-0' }} km/h</span>
+                <span>🎯 ±{{ myPosition()!.accuracy | number: '1.0-0' }}m</span>
+              </div>
+            </div>
+          } @else {
+            <div class="no-pos">
+              <span>GPS inativo</span>
+              <button
+                class="btn btn-primary btn-sm"
+                style="margin-top: 8px"
+                (click)="startTracking()"
+              >
+                Ativar GPS
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="card bg-dark ts-card">
+          <div class="ts-header">
+            <span>Usuários na Sala</span>
+            <span class="badge badge-teal">{{ peers().length + 1 }}</span>
+          </div>
+
+          <div class="peer-item me">
+            <div class="peer-avatar" [class]="myRole() === 'driver' ? 'av-green' : 'av-teal'">
+              {{ myRole() === 'driver' ? '🚌' : '🧍' }}
+            </div>
+            <div class="peer-info">
+              <div class="peer-name">
+                {{ myName() || 'Você' }} <span class="you-tag">você</span>
+              </div>
+              <div class="peer-role">
+                {{ myRole() === 'driver' ? 'Motorista' : 'Passageiro' }}
+              </div>
+            </div>
+            <div class="peer-status">
+              <div
+                class="status-dot"
+                [class]="'dot-' + (tracking() ? 'connected' : 'disconnected')"
+              ></div>
+            </div>
+          </div>
+
+          @for (peer of peers(); track peer.clientId) {
+            <div class="peer-item" (click)="focusPeer(peer.clientId)">
+              <div class="peer-avatar" [class]="peer.role === 'driver' ? 'av-green' : 'av-teal'">
+                {{ peer.role === 'driver' ? '🚌' : '🧍' }}
+              </div>
+              <div class="peer-info">
+                <div class="peer-name">{{ peer.name }}</div>
+                <div class="peer-role">
+                  {{ peer.role === 'driver' ? 'Motorista' : 'Passageiro' }}
+                </div>
+              </div>
+              <div class="peer-speed">
+                @if ((trackedPeers[peer.clientId]?.speed ?? 0) > 0) {
+                  {{ trackedPeers[peer.clientId].speed * 3.6 | number: '1.0-0' }} km/h
+                } @else {
+                  Parado
+                }
+              </div>
+            </div>
+          }
+
+          @if (peers().length === 0) {
+            <div class="no-peers">
+              Nenhum outro usuário na sala.<br />Compartilhe o código:
+              <strong>{{ currentRoom() }}</strong>
+            </div>
+          }
+        </div>
+
+        <div class="card bg-dark ts-card" id="nosignal">
+          <div class="ts-header">
+            <span>Sinais Recebidos</span>
+            @if (signalLog().length > 0) {
+              <span class="badge badge-red">{{ signalLog().length }}</span>
+            }
+          </div>
+          @for (s of signalLog(); track s.id) {
+            <div class="signal-log-item">
+              <div class="sli-top">
+                <span class="sli-name">{{ s.name }}</span>
+                <span class="sli-time">{{ s.time }}</span>
+              </div>
+              <div class="sli-stop">📍 {{ s.stop }}</div>
+              <div class="sli-count">{{ s.count }} passageiro(s)</div>
+            </div>
+          }
+          @if (signalLog().length === 0) {
+            <div class="no-peers">Nenhum sinal emitido ainda</div>
+          }
+        </div>
+      </div>
+
+      <div class="map-bottom-sheet" [class.expanded]="mapExpanded">
+        <div class="sheet-handle" (click)="toggleMap()"></div>
+        <div class="map-wrap">
+          <div #mapContainer class="leaflet-map"></div>
+
+          <div class="map-overlay-tl">
+            <button class="map-btn" title="Centralizar minha posição" (click)="centerOnMe()">
+              ⊙
+            </button>
+            <button class="map-btn" title="Ver todos" (click)="fitAll()">⤢</button>
+          </div>
+
+          @if (!leafletLoaded()) {
+            <div class="map-loading">
+              <div class="ml-spinner"></div>
+              <span>Carregando mapa…</span>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+@if (showSignalModal()) {
+  <div class="modal-overlay" (click)="showSignalModal.set(false)">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>🚨 Emitir Sinal de Embarque</h2>
+        <button class="close-btn" (click)="showSignalModal.set(false)">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="lf-group">
+          <label>Nome do Ponto</label>
+          <input [(ngModel)]="signalStop" placeholder="ex: Av. São Paulo, 450" class="eco-input" />
+        </div>
+        <div class="lf-group">
+          <label>Número de passageiros</label>
+          <input type="number" [(ngModel)]="signalCount" min="1" max="50" class="eco-input" />
+        </div>
+        <div class="signal-loc-info">
+          @if (myPosition()) {
+            <span class="badge badge-green">📍 Localização GPS será incluída</span>
+          } @else {
+            <span class="badge badge-gray">⚠️ GPS inativo — localização não incluída</span>
+          }
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-ghost" (click)="showSignalModal.set(false)">Cancelar</button>
+        <button class="btn btn-primary" (click)="emitSignal()">Enviar Sinal</button>
+      </div>
+    </div>
+  </div>
+}
