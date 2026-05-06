@@ -119,6 +119,25 @@
                   @if (room.display_name) {
                     <span class="room-alias">{{ room.display_name }}</span>
                   }
+                  <div class="room-actions" (click)="$event.stopPropagation()">
+                    <button class="act-btn rename-btn" (click)="openRename(room)" title="Renomear">
+                      ✏️
+                    </button>
+                    <button
+                      class="act-btn privacy-btn"
+                      (click)="openPrivacy(room)"
+                      title="Privacidade"
+                    >
+                      {{ room.is_private ? '🔓' : '🔒' }}
+                    </button>
+                    <button
+                      class="act-btn close-btn"
+                      (click)="confirmClose(room)"
+                      title="Fechar sala"
+                    >
+                      ✕
+                    </button>
+                  </div>
                 </div>
 
                 <div class="room-meta">
@@ -127,27 +146,6 @@
                   }
                   <span class="last-active">{{ formatTime(room.last_active) }}</span>
                 </div>
-
-                <div class="room-actions" (click)="$event.stopPropagation()">
-                  <button class="act-btn rename-btn" (click)="openRename(room)" title="Renomear">
-                    ✏️
-                  </button>
-                  <button
-                    class="act-btn privacy-btn"
-                    (click)="openPrivacy(room)"
-                    title="Privacidade"
-                  >
-                    {{ room.is_private ? '🔓' : '🔒' }}
-                  </button>
-                  <button
-                    class="act-btn close-btn"
-                    (click)="confirmClose(room)"
-                    title="Fechar sala"
-                  >
-                    ✕
-                  </button>
-                </div>
-
                 <div class="expand-arrow" [class.open]="room.expanded">›</div>
               </div>
 
@@ -200,41 +198,59 @@
   <div class="toast" [class.error]="toastError()">{{ toast() }}</div>
 }
 
-<div *ngIf="showRenameModal()" class="modal-backdrop">
-  <div class="custom-modal">
-    <h2>Renomear sala</h2>
+<div *ngIf="showRenameModal()" class="modal-overlay" (click)="showRenameModal.set(false)">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <span>✏️ Renomear sala</span>
+      <button class="modal-close" (click)="showRenameModal.set(false)">✕</button>
+    </div>
 
-    <input [(ngModel)]="renameValue" placeholder="Novo nome da sala" />
+    <div class="modal-body">
+      <div class="field">
+        <label>Novo nome</label>
+        <input class="field-input" [(ngModel)]="renameValue" placeholder="Novo nome da sala" />
+      </div>
+    </div>
 
-    <div class="actions">
-      <button (click)="showRenameModal.set(false)">Cancelar</button>
-      <button (click)="doRename()">Renomear</button>
+    <div class="modal-foot">
+      <button class="modal-cancel" (click)="showRenameModal.set(false)">Cancelar</button>
+      <button class="modal-confirm" (click)="doRename()">Renomear</button>
     </div>
   </div>
 </div>
 
-<div *ngIf="showPrivateModal()" class="modal-backdrop">
-  <div class="custom-modal">
-    <h2>Privar sala</h2>
+<div *ngIf="showPrivateModal()" class="modal-overlay" (click)="showPrivateModal.set(false)">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <span>🔒 Privar sala</span>
+      <button class="modal-close" (click)="showPrivateModal.set(false)">✕</button>
+    </div>
 
-    <p>Deseja tornar esta sala privada?</p>
+    <div class="modal-body">
+      <span>Deseja tornar esta sala privada?</span>
+    </div>
 
-    <div class="actions">
-      <button (click)="showPrivateModal.set(false)">Cancelar</button>
-      <button (click)="doSetPrivacy()">Confirmar</button>
+    <div class="modal-foot">
+      <button class="modal-cancel" (click)="showPrivateModal.set(false)">Cancelar</button>
+      <button class="modal-confirm" (click)="doSetPrivacy()">Confirmar</button>
     </div>
   </div>
 </div>
 
-<div *ngIf="showDeleteModal()" class="modal-backdrop">
-  <div class="custom-modal">
-    <h2>Encerrar sala</h2>
+<div *ngIf="showDeleteModal()" class="modal-overlay" (click)="showDeleteModal.set(false)">
+  <div class="modal" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <span>🗑️ Encerrar sala</span>
+      <button class="modal-close" (click)="showDeleteModal.set(false)">✕</button>
+    </div>
 
-    <p>Todos os usuários serão removidos. Continuar?</p>
+    <div class="modal-body">
+      <p>Todos os usuários serão removidos. Continuar?</p>
+    </div>
 
-    <div class="actions">
-      <button (click)="showDeleteModal.set(false)">Cancelar</button>
-      <button (click)="doClose()">Encerrar</button>
+    <div class="modal-foot">
+      <button class="modal-cancel" (click)="showDeleteModal.set(false)">Cancelar</button>
+      <button class="modal-confirm" (click)="doClose()">Encerrar</button>
     </div>
   </div>
 </div>

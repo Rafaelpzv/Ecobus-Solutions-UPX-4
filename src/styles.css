@@ -19,3 +19,81 @@
   --radius-sm: 8px;
   --radius-lg: 16px;
 }
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(6px);
+  z-index: 2000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal {
+  background: #0d1b2a;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 400px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  display: block;
+}
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  font-size: 15px;
+  font-weight: 700;
+}
+.modal-close {
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  &:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+  }
+}
+.modal-body {
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.field label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255, 255, 255, 0.35);
+}
+.field-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  &::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+  }
+  &:focus {
+    outline: none;
+    border-color: rgba(255, 255, 255, 0.3);
+  }
+}

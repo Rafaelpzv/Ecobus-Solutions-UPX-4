@@ -191,7 +191,7 @@ export class SupabaseService {
   closeRoom() {
     this.sendAdminCommand('close_room', {});
   }
-  sendSignal(stop: string, count: number, lat?: number, lng?: number) {
+  sendSignal(stop: string, count: number, lat?: number, lng?: number, message?: string) {
     this.channel.send({
       type: 'broadcast',
       event: 'signal',
@@ -201,6 +201,7 @@ export class SupabaseService {
         count,
         lat,
         lng,
+        message,
         timestamp: Date.now(),
       },
     });

@@ -36,6 +36,7 @@ interface SignalEvent {
   lat?: number;
   lng?: number;
   time: string;
+  message?: string;
 }
 
 type PageState = 'loading' | 'connected' | 'error';
@@ -72,6 +73,7 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
 
   showSignalModal = signal(false);
   signalStop = '';
+  signalMessage = '';
   signalCount = 1;
 
   trackedPeers: Record<string, TrackedPeer> = {};
@@ -94,6 +96,12 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
   ) {}
 
   ngOnInit(): void {
+    if ('Notification' in window) {
+      Notification.requestPermission().then((permission) => {
+        console.log('Permissão:', permission);
+      });
+    }
+
     const code = this.route.snapshot.paramMap.get('codigo') ?? '';
     const role = (this.route.snapshot.queryParamMap.get('role') as WsRole) ?? 'passenger';
     const name = this.route.snapshot.queryParamMap.get('name') ?? '';
@@ -266,11 +274,23 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
 
   emitSignal(): void {
     if (!this.signalStop.trim()) return;
+
     const pos = this.myPosition();
-    this.supabase.sendSignal(this.signalStop, this.signalCount, pos?.lat, pos?.lng);
+
+    this.supabase.sendSignal(
+      this.signalStop,
+      this.signalCount,
+      pos?.lat,
+      pos?.lng,
+      this.signalMessage, // 👈 novo campo
+    );
+
     this.showSignalModal.set(false);
+
+    // reset
     this.signalStop = '';
     this.signalCount = 1;
+    this.signalMessage = '';
   }
 
   copyRoomCode(): void {
@@ -399,6 +419,7 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
       count: sig.count,
       lat: sig.lat,
       lng: sig.lng,
+      message: sig.message,
       time: new Date(sig.timestamp).toLocaleTimeString('pt-BR', {
         hour: '2-digit',
         minute: '2-digit',
@@ -407,7 +428,19 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
     this.signalLog.update((log) => [event, ...log.slice(0, 19)]);
     if (this.map && sig.lat && sig.lng) {
       const L = (window as any).L;
-      L.marker([sig.lat, sig.lng]).addTo(this.map).bindPopup(`🚨 ${sig.stop}`);
+      L.marker([sig.lat, sig.lng])
+        .addTo(this.map)
+        .bindPopup(
+          sig.message ? `🚨 ${sig.stop}<br/><small>${sig.message}</small>` : `🚨 ${sig.stop}`,
+        );
+    }
+    if (Notification.permission === 'granted') {
+      new Notification('🚨 Novo sinal', {
+        body: sig.message
+          ? `${sig.stop} (${sig.count}) - ${sig.message}`
+          : `${sig.stop} (${sig.count})`,
+        icon: '/assets/icon.png', // opcional
+      });
     }
   }
 

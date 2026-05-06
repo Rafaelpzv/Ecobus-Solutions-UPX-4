@@ -159,6 +159,11 @@
                 <span class="sig-time">{{ sig.time }}</span>
               </div>
               <div class="sig-stop">📍 {{ sig.stop }}</div>
+              @if (sig.message) {
+                <div class="sig-message">
+                  <small>{{ sig.message }}</small>
+                </div>
+              }
               <div class="sig-count">{{ sig.count }} passageiro(s)</div>
             </div>
           }
@@ -201,6 +206,14 @@
             class="field-input"
             [(ngModel)]="signalStop"
             placeholder="ex: Av. São Paulo, 450"
+          />
+        </div>
+        <div class="field">
+          <label>Mensagem (opcional)</label>
+          <input
+            class="field-input"
+            [(ngModel)]="signalMessage"
+            placeholder="Ex: Ônibus lotado / atrasado / etc"
           />
         </div>
         <div class="field">
