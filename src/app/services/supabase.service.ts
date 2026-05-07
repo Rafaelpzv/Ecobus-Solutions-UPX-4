@@ -1,9 +1,15 @@
 import { Injectable } from '@angular/core';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { environment } from '../environment/environment';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 
 export type WsRole = 'driver' | 'passenger';
+
+export interface PriorityPayload {
+  room: string;
+  passengerId: string;
+  driverId: string;
+}
 
 @Injectable({
   providedIn: 'root',
@@ -33,7 +39,7 @@ export class SupabaseService {
 
     this.peers$.next(users);
   }
-
+  priority$ = new Subject<PriorityPayload>();
   status$ = new BehaviorSubject<string>('disconnected');
   peers$ = new BehaviorSubject<any[]>([]);
   location$ = new BehaviorSubject<any>(null);
@@ -79,6 +85,11 @@ export class SupabaseService {
     // 🚨 sinais
     this.channel.on('broadcast', { event: 'signal' }, (payload: any) => {
       this.signals$.next(payload.payload);
+    });
+
+    // 🎯 prioridade
+    this.channel.on('broadcast', { event: 'priority' }, (payload: any) => {
+      this.priority$.next(payload.payload);
     });
 
     this.channel.on('broadcast', { event: 'admin' }, (payload: any) => {
@@ -129,6 +140,14 @@ export class SupabaseService {
       if (status === 'TIMED_OUT') {
         this.status$.next('disconnected');
       }
+    });
+  }
+
+  sendPriority(payload: PriorityPayload) {
+    return this.channel?.send({
+      type: 'broadcast',
+      event: 'priority',
+      payload,
     });
   }
 

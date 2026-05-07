@@ -29,9 +29,6 @@
         <div class="room-info">
           <div class="room-code">{{ roomCode() }}</div>
           <div class="room-meta">
-            <span class="role-tag" [class.driver]="myRole() === 'driver'">
-              {{ myRole() === 'driver' ? '🚌 Motorista' : '🧍 Passageiro' }}
-            </span>
             <span class="dot-sep">·</span>
             <span class="peer-count">{{ totalInRoom() }} na sala</span>
           </div>
@@ -59,6 +56,11 @@
         </button>
       </div>
     </header>
+    @if (myRole() === 'driver') {
+      <button class="auto-priority-btn" (click)="autoPrioritizeNearest()">
+        🎯 Priorizar mais próximo
+      </button>
+    }
 
     @if (gpsError()) {
       <div class="gps-banner">⚠️ {{ gpsError() }}</div>
@@ -121,19 +123,37 @@
           </div>
 
           @for (peer of peers(); track peer.clientId) {
-            <div class="peer-row" (click)="focusPeer(peer.clientId)">
+            <div
+              class="peer-row"
+              [class.priority]="isPrioritized(peer.clientId)"
+              (click)="focusPeer(peer.clientId)"
+            >
               <div class="peer-avatar" [class.driver-av]="peer.role === 'driver'">
                 {{ peer.role === 'driver' ? '🚌' : '🧍' }}
               </div>
+
               <div class="peer-details">
                 <span class="peer-name">{{ peer.name }}</span>
-                <span class="peer-role">{{
-                  peer.role === 'driver' ? 'Motorista' : 'Passageiro'
-                }}</span>
+
+                <span class="peer-role">
+                  {{ peer.role === 'driver' ? 'Motorista' : 'Passageiro' }}
+                </span>
               </div>
-              <span class="peer-speed">
-                {{ getPeerSpeed(peer.clientId) }}
-              </span>
+
+              <div class="peer-extra">
+                <span class="peer-distance">
+                  {{ getPeerDistance(peer.clientId) }}
+                </span>
+
+                @if (myRole() === 'driver' && peer.role === 'passenger') {
+                  <button
+                    class="priority-btn"
+                    (click)="prioritizePeer(peer.clientId); $event.stopPropagation()"
+                  >
+                    {{ isPrioritized(peer.clientId) ? 'Priorizado' : 'Priorizar' }}
+                  </button>
+                }
+              </div>
             </div>
           }
 
@@ -232,4 +252,10 @@
       </div>
     </div>
   </div>
+}
+@if (gpsError()) {
+  <div class="gps-banner">⚠️ {{ gpsError() }}</div>
+}
+@if (priorityBannerVisible()) {
+  <div class="priority-banner">🚌 O motorista está indo até você</div>
 }

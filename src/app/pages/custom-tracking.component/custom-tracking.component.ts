@@ -16,6 +16,7 @@ import { Subscription } from 'rxjs';
 import { SupabaseService, WsRole } from '../../services/supabase.service';
 import { LocationService, GpsPosition } from '../../services/location.service';
 import { RoomService } from '../../services/room.service';
+import { effect } from '@angular/core';
 
 interface TrackedPeer {
   clientId: string;
@@ -53,6 +54,8 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
   showRenameModal = signal(false);
   showDeleteModal = signal(false);
   showPrivateModal = signal(false);
+  prioritizedPassengerId = signal<string | null>(null);
+  priorityBannerVisible = signal(false);
 
   newRoomName = '';
 
@@ -85,6 +88,96 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
   private peerMarkers: Record<string, any> = {};
   private subs: Subscription[] = [];
   private pingInterval: any;
+  getDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
+    const R = 6371000;
+
+    const dLat = ((lat2 - lat1) * Math.PI) / 180;
+    const dLng = ((lng2 - lng1) * Math.PI) / 180;
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos((lat1 * Math.PI) / 180) *
+        Math.cos((lat2 * Math.PI) / 180) *
+        Math.sin(dLng / 2) *
+        Math.sin(dLng / 2);
+
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+  getPeerDistance(clientId: string): string {
+    if (!this.myPosition()) {
+      return '--';
+    }
+
+    const pos = this.trackedPeers[clientId];
+
+    if (!pos) {
+      return '--';
+    }
+
+    const meters = this.getDistance(
+      this.myPosition()!.lat,
+      this.myPosition()!.lng,
+      pos.lat,
+      pos.lng,
+    );
+
+    if (meters < 1000) {
+      return `${Math.round(meters)}m`;
+    }
+
+    return `${(meters / 1000).toFixed(1)}km`;
+  }
+
+  prioritizePeer(clientId: string) {
+    this.prioritizedPassengerId.set(clientId);
+
+    this.focusPeer(clientId);
+
+    this.supabase.sendPriority({
+      room: this.roomCode(),
+      passengerId: clientId,
+      driverId: this.supabase.clientId,
+    });
+  }
+  isPrioritized(clientId: string): boolean {
+    return this.prioritizedPassengerId() === clientId;
+  }
+  autoPrioritizeNearest() {
+    if (this.myRole() !== 'driver') {
+      return;
+    }
+
+    const passengers = this.peers().filter((p) => p.role === 'passenger');
+
+    if (!passengers.length || !this.myPosition()) {
+      return;
+    }
+
+    let nearestId: string | null = null;
+    let minDistance = Infinity;
+
+    for (const peer of passengers) {
+      const pos = this.trackedPeers[peer.clientId];
+
+      if (!pos) continue;
+
+      const distance = this.getDistance(
+        this.myPosition()!.lat,
+        this.myPosition()!.lng,
+        pos.lat,
+        pos.lng,
+      );
+
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestId = peer.clientId;
+      }
+    }
+
+    if (nearestId) {
+      this.prioritizePeer(nearestId);
+    }
+  }
 
   constructor(
     private route: ActivatedRoute,
@@ -101,6 +194,43 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
         console.log('Permissão:', permission);
       });
     }
+    this.supabase.priority$.subscribe((payload) => {
+      this.prioritizedPassengerId.set(payload.passengerId);
+
+      if (payload.passengerId === this.supabase.clientId) {
+        this.priorityBannerVisible.set(true);
+
+        // vibração celular
+        if ('vibrate' in navigator) {
+          navigator.vibrate([200, 100, 200]);
+        }
+
+        // notificação navegador
+        if ('Notification' in window) {
+          if (Notification.permission === 'granted') {
+            new Notification('🚌 Motorista se aproximando', {
+              body: 'O motorista está te priorizando. Prepare-se para embarcar.',
+              icon: 'assets/bus-icon.png',
+              badge: 'assets/bus-icon.png',
+            });
+          } else if (Notification.permission !== 'denied') {
+            Notification.requestPermission().then((permission) => {
+              if (permission === 'granted') {
+                new Notification('🚌 Motorista se aproximando', {
+                  body: 'O motorista está te priorizando. Prepare-se para embarcar.',
+                  icon: 'assets/bus-icon.png',
+                  badge: 'assets/bus-icon.png',
+                });
+              }
+            });
+          }
+        }
+
+        setTimeout(() => {
+          this.priorityBannerVisible.set(false);
+        }, 7000);
+      }
+    });
 
     const code = this.route.snapshot.paramMap.get('codigo') ?? '';
     const role = (this.route.snapshot.queryParamMap.get('role') as WsRole) ?? 'passenger';
@@ -439,7 +569,8 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
         body: sig.message
           ? `${sig.stop} (${sig.count}) - ${sig.message}`
           : `${sig.stop} (${sig.count})`,
-        icon: '/assets/icon.png', // opcional
+        icon: 'assets/bus-icon.png', // opcional
+        badge: 'assets/bus-icon.png',
       });
     }
   }
