@@ -59,6 +59,7 @@
           maxlength="30"
         />
       </div>
+
       <div class="lf-group">
         <label>Código da sala</label>
         <div class="code-wrap">
@@ -93,6 +94,25 @@
         }
         <div class="code-hint">Letras, números, hífens e underlines. Mín. 3 caracteres.</div>
       </div>
+
+      <!-- 🔑 Campo de senha (aparece apenas se a sala for privada) -->
+      @if (needsPassword()) {
+        <div class="lf-group">
+          <label>Senha da sala</label>
+          <input
+            type="text"
+            class="eco-input"
+            placeholder="Digite a senha"
+            [ngModel]="roomPassword()"
+            (ngModelChange)="roomPassword.set($event)"
+            (keydown.enter)="enter()"
+            autocomplete="off"
+          />
+          @if (passwordError()) {
+            <div class="field-error">⚠️ {{ passwordError() }}</div>
+          }
+        </div>
+      }
     </div>
 
     <button class="join-btn" [disabled]="!canEnter()" [class.loading]="loading()" (click)="enter()">

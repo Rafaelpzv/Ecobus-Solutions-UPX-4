@@ -248,46 +248,48 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
   ngAfterViewInit(): void {}
 
   private connect(room: string, role: WsRole, name: string): void {
-    this.supabase.connect(room, role, name);
-    this.roomService.enterRoom(room, role, name);
+    // Obtém o clientId único do SupabaseService (já deve existir)
+    const clientId = this.supabase.clientId;
 
+    // Conecta no Supabase e no canal de presença (RoomService)
+    this.supabase.connect(room, role, name);
+    this.roomService.enterRoom(room, role, name, clientId, ''); // senha vazia se não houver
+
+    // Assinatura única de comandos do admin
     this.supabase.subscribeToAdminCommands((payload) => {
       const data = payload.payload;
+      if (data.roomCode !== this.roomCode()) return;
 
-      // 🔥 RENAME
-      if (data.type === 'rename_room') {
-        alert(`Sala renomeada para: ${data.name}`);
+      if (data.type === 'kick' && data.clientId === clientId) {
+        alert('Você foi expulso');
+        this.leave();
       }
 
-      // 🔒 PRIVAR
-      if (data.type === 'toggle_private') {
-        alert('Sala agora é privada');
-      }
-
-      // ❌ FECHAR SALA
-      if (data.type === 'close_room') {
-        alert('Sala encerrada pelo admin');
+      if (data.type === 'room_closed') {
+        alert('Sala encerrada');
         this.leave();
       }
     });
 
+    // Assinaturas de eventos
     this.subs.push(
+      // Localização de outros peers
       this.supabase.location$.subscribe((loc) => {
         if (!loc) return;
         this.zone.run(() => this.onPeerLocation(loc));
       }),
 
+      // Sinais (inclui comandos admin via canal de sinais)
       this.supabase.signals$.subscribe((sig: any) => {
         if (!sig) return;
 
         this.zone.run(() => {
-          // 🔥 ADMIN COMMANDS
+          // Comandos administrativos (kick, close) também podem vir por signals
           if (sig.type === 'admin') {
             const data = sig.data;
-
             if (data.roomCode !== this.roomCode()) return;
 
-            if (data.type === 'kick' && data.clientId === this.supabase.clientId) {
+            if (data.type === 'kick' && data.clientId === clientId) {
               alert('Você foi expulso');
               this.leave();
               return;
@@ -299,14 +301,15 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
               return;
             }
 
-            return; // importante pra não cair no signal normal
+            return; // Não trata como sinal normal
           }
 
-          // 🚨 sinais normais
+          // Sinal normal (passageiro enviou alerta)
           this.onSignalReceived(sig);
         });
       }),
 
+      // Status da conexão
       this.supabase.status$.subscribe((status) => {
         this.zone.run(() => {
           if (status === 'kicked') {
@@ -335,12 +338,26 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
         });
       }),
 
+      // Lista de peers (usuários na sala)
       this.supabase.peers$.subscribe((peers) => {
         this.zone.run(() => {
-          this.peers.set(peers.filter((p) => p.clientId !== this.supabase.clientId));
+          // Remove duplicatas pelo clientId
+          const seen = new Set<string>();
+          const unique = peers.filter((p) => {
+            if (seen.has(p.clientId)) return false;
+            seen.add(p.clientId);
+            return true;
+          });
+
+          // Filtra o próprio usuário (usando o clientId real)
+          const others = unique.filter((p) => p.clientId !== clientId);
+
+          // Atualiza o sinal
+          this.peers.set(others);
         });
       }),
 
+      // Posição GPS local
       this.loc.position$.subscribe((pos) => {
         if (!pos) return;
         this.zone.run(() => {
@@ -350,26 +367,12 @@ export class CustomTrackingComponent implements OnInit, AfterViewInit, OnDestroy
         });
       }),
 
+      // Erros de GPS
       this.loc.error$.subscribe((err) => this.zone.run(() => this.gpsError.set(err))),
+
+      // Status de tracking (ligado/desligado)
       this.loc.tracking$.subscribe((t) => this.zone.run(() => this.tracking.set(t))),
     );
-
-    // 👇 ADICIONA ISSO AQUI
-    this.supabase.subscribeToAdminCommands((payload) => {
-      const data = payload.payload;
-
-      if (data.roomCode !== this.roomCode()) return;
-
-      if (data.type === 'kick' && data.clientId === this.supabase.clientId) {
-        alert('Você foi expulso');
-        this.leave();
-      }
-
-      if (data.type === 'room_closed') {
-        alert('Sala encerrada');
-        this.leave();
-      }
-    });
   }
 
   private startPing(): void {

@@ -82,18 +82,44 @@
       <div class="table-toolbar">
         <h2 class="section-title">🚪 Salas</h2>
         <div class="toolbar-right">
-          <input
-            class="search-input"
-            type="text"
-            [(ngModel)]="searchTerm"
-            placeholder="🔍 Buscar sala..."
-          />
+          <input class="search-input" ... />
           <button class="refresh-btn" (click)="loadRooms()" [disabled]="loading()">
             {{ loading() ? '...' : '↺ Atualizar' }}
           </button>
+          <!-- 👇 Novo botão -->
+          <button
+            class="delete-all-btn"
+            (click)="confirmDeleteAll()"
+            title="Excluir todas as salas"
+          >
+            🗑️ Todas
+          </button>
         </div>
       </div>
-
+      <!-- ── DELETE ALL MODAL ───────────────────────────────────── -->
+      @if (showDeleteAllModal()) {
+        <div class="modal-overlay" (click)="showDeleteAllModal.set(false)">
+          <div class="modal" (click)="$event.stopPropagation()">
+            <div class="modal-head danger-head">
+              <span>⚠️ Excluir todas as salas</span>
+              <button class="modal-close" (click)="showDeleteAllModal.set(false)">✕</button>
+            </div>
+            <div class="modal-body">
+              <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.6)">
+                Essa ação removerá <strong>todas</strong> as salas do sistema permanentemente. Todos
+                os usuários serão desconectados.
+              </p>
+              <p class="confirm-text warn">Não será possível desfazer.</p>
+            </div>
+            <div class="modal-foot">
+              <button class="btn-cancel" (click)="showDeleteAllModal.set(false)">Cancelar</button>
+              <button class="btn-danger" (click)="doDeleteAll()" [disabled]="deletingAll()">
+                {{ deletingAll() ? 'Excluindo...' : 'Sim, excluir todas' }}
+              </button>
+            </div>
+          </div>
+        </div>
+      }
       <!-- Table -->
       @if (loading() && rooms().length === 0) {
         <div class="empty-state">
@@ -167,7 +193,7 @@
                             {{ user.role === 'driver' ? '🚌' : '🧍' }}
                           </div>
                           <div class="user-info">
-                            <span class="user-name">{{ user.name }}</span>
+                            <span class="user-name">{{ user.name || 'Sem nome' }}</span>
                             <span class="user-role">{{
                               user.role === 'driver' ? 'Motorista' : 'Passageiro'
                             }}</span>
@@ -218,16 +244,49 @@
     </div>
   </div>
 </div>
-
 <div *ngIf="showPrivateModal()" class="modal-overlay" (click)="showPrivateModal.set(false)">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-head">
-      <span>🔒 Privar sala</span>
+      <span
+        >{{ privacyIsPrivate ? '🔓' : '🔒' }}
+        {{ privacyIsPrivate ? 'Tornar pública' : 'Tornar privada' }}</span
+      >
       <button class="modal-close" (click)="showPrivateModal.set(false)">✕</button>
     </div>
 
     <div class="modal-body">
-      <span>Deseja tornar esta sala privada?</span>
+      <p style="margin: 0; font-size: 14px; color: rgba(255, 255, 255, 0.6)">
+        {{
+          privacyIsPrivate
+            ? 'A sala está privada. Deseja torná-la pública?'
+            : 'A sala está pública. Deseja restringir o acesso?'
+        }}
+      </p>
+
+      <!-- Toggle -->
+      <div class="toggle-row">
+        <span>Privada</span>
+        <button
+          class="toggle-btn"
+          [class.on]="privacyIsPrivate"
+          (click)="privacyIsPrivate = !privacyIsPrivate"
+        >
+          {{ privacyIsPrivate ? 'ON' : 'OFF' }}
+        </button>
+      </div>
+
+      <!-- Campo de senha (exibido apenas se privacidade ativada) -->
+      @if (privacyIsPrivate) {
+        <div class="field">
+          <label>Senha da sala</label>
+          <input
+            class="field-input"
+            type="text"
+            [(ngModel)]="privacyPassword"
+            placeholder="Senha (opcional)"
+          />
+        </div>
+      }
     </div>
 
     <div class="modal-foot">
@@ -236,7 +295,6 @@
     </div>
   </div>
 </div>
-
 <div *ngIf="showDeleteModal()" class="modal-overlay" (click)="showDeleteModal.set(false)">
   <div class="modal" (click)="$event.stopPropagation()">
     <div class="modal-head">

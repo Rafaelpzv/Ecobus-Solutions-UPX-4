@@ -31,6 +31,9 @@ export class AdminComponent implements OnInit, OnDestroy {
   // ── Rooms
   rooms = signal<RoomView[]>([]);
   loading = signal(false);
+  // ── Excluir todas as salas ─────────────────────────────
+  showDeleteAllModal = signal(false);
+  deletingAll = signal(false);
   searchTerm = '';
 
   // ── Computed stats
@@ -118,6 +121,25 @@ export class AdminComponent implements OnInit, OnDestroy {
       this.showToast('Erro ao carregar salas', true);
     } finally {
       this.loading.set(false);
+    }
+  }
+
+  confirmDeleteAll(): void {
+    this.showDeleteAllModal.set(true);
+  }
+
+  async doDeleteAll(): Promise<void> {
+    this.deletingAll.set(true);
+    try {
+      await this.adminService.deleteAllRooms();
+      this.rooms.set([]); // limpa a lista local
+      this.showDeleteAllModal.set(false);
+      this.showToast('Todas as salas foram removidas');
+    } catch (e) {
+      console.error(e);
+      this.showToast('Erro ao excluir salas', true);
+    } finally {
+      this.deletingAll.set(false);
     }
   }
 
@@ -212,12 +234,18 @@ export class AdminComponent implements OnInit, OnDestroy {
     const room = this.privacyModal();
     if (!room) return;
 
+    // Se está marcando como privada, a senha é obrigatória
+    if (this.privacyIsPrivate && !this.privacyPassword.trim()) {
+      this.showToast('Defina uma senha para a sala privada', true);
+      return;
+    }
+
     this.saving.set(true);
     try {
       await this.adminService.setPrivate(
         room.code,
         this.privacyIsPrivate,
-        this.privacyIsPrivate ? this.privacyPassword : null,
+        this.privacyIsPrivate ? this.privacyPassword.trim() : null,
       );
 
       this.rooms.update((list) =>
@@ -226,16 +254,17 @@ export class AdminComponent implements OnInit, OnDestroy {
             ? {
                 ...r,
                 is_private: this.privacyIsPrivate,
-                private_password: this.privacyIsPrivate ? this.privacyPassword : null,
+                private_password: this.privacyIsPrivate ? this.privacyPassword.trim() : null,
               }
             : r,
         ),
       );
 
       this.privacyModal.set(null);
-      this.showPrivateModal.set(false); // 👈
+      this.showPrivateModal.set(false);
       this.showToast('Privacidade atualizada');
-    } catch {
+    } catch (e) {
+      console.error(e);
       this.showToast('Erro ao atualizar privacidade', true);
     } finally {
       this.saving.set(false);

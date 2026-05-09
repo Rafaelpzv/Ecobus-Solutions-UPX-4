@@ -1,111 +1,114 @@
-import { Injectable, signal, computed } from '@angular/core';
+import { Injectable } from '@angular/core';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
+import { environment } from '../environment/environment';
 
 export interface RoomMeta {
   code: string;
-  createdAt: number;
-  lastUsed: number;
   role: 'driver' | 'passenger';
   name: string;
+  lastUsed: number;
 }
-
-const STORAGE_KEY = 'ecobus_rooms';
-const MAX_RECENT = 5;
 
 @Injectable({ providedIn: 'root' })
 export class RoomService {
-  private _recentRooms = signal<RoomMeta[]>(this.loadFromStorage());
-  private _currentRoom = signal<RoomMeta | null>(null);
+  private supabase: SupabaseClient;
+  private currentChannel: any = null; // 👈 guarda o canal da sala atual
 
-  readonly recentRooms = computed(() => this._recentRooms());
-  readonly currentRoom = computed(() => this._currentRoom());
+  constructor() {
+    this.supabase = createClient(environment.supabaseUrl, environment.supabaseKey);
+  }
 
-  // ── Validation ────────────────────────────────────────────────────────────
+  // ── Validação & normalização ──────────────────────
 
-  validateCode(code: string): { valid: boolean; error?: string } {
-    const trimmed = code.trim();
-    if (!trimmed) return { valid: false, error: 'Código não pode ser vazio' };
-    if (trimmed.length < 3)
-      return { valid: false, error: 'Código muito curto (mínimo 3 caracteres)' };
-    if (trimmed.length > 40)
-      return { valid: false, error: 'Código muito longo (máximo 40 caracteres)' };
-    if (!/^[a-zA-Z0-9_\-]+$/.test(trimmed)) {
-      return { valid: false, error: 'Use apenas letras, números, - e _' };
+  validateCode(value: string): { valid: boolean; error?: string } {
+    if (!value || value.trim().length === 0) {
+      return { valid: false, error: 'Código obrigatório' };
+    }
+    const normalized = this.normalizeCode(value);
+    if (normalized.length < 3) {
+      return { valid: false, error: 'Mínimo 3 caracteres' };
+    }
+    if (!/^[a-z0-9\-_]+$/.test(normalized)) {
+      return { valid: false, error: 'Apenas letras, números, hífens e underlines' };
     }
     return { valid: true };
   }
 
-  normalizeCode(code: string): string {
-    return code.trim().toLowerCase();
+  normalizeCode(raw: string): string {
+    return raw
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, '-')
+      .replace(/[^a-z0-9\-_]/g, '');
   }
-
-  // ── Room lifecycle ────────────────────────────────────────────────────────
-
-  enterRoom(code: string, role: 'driver' | 'passenger', name: string): void {
-    const normalized = this.normalizeCode(code);
-    const meta: RoomMeta = {
-      code: normalized,
-      createdAt: Date.now(),
-      lastUsed: Date.now(),
-      role,
-      name,
-    };
-
-    this._currentRoom.set(meta);
-    this.addToRecent(meta);
-  }
-
-  leaveRoom(): void {
-    this._currentRoom.set(null);
-  }
-
-  // ── Recent rooms ──────────────────────────────────────────────────────────
-
-  private addToRecent(meta: RoomMeta): void {
-    const current = this._recentRooms();
-    const filtered = current.filter((r) => r.code !== meta.code);
-    const updated = [{ ...meta, lastUsed: Date.now() }, ...filtered].slice(0, MAX_RECENT);
-    this._recentRooms.set(updated);
-    this.saveToStorage(updated);
-  }
-
-  removeRecent(code: string): void {
-    const updated = this._recentRooms().filter((r) => r.code !== code);
-    this._recentRooms.set(updated);
-    this.saveToStorage(updated);
-  }
-
-  clearRecent(): void {
-    this._recentRooms.set([]);
-    localStorage.removeItem(STORAGE_KEY);
-  }
-
-  // ── Code generation ───────────────────────────────────────────────────────
 
   generateCode(): string {
-    const adjectives = ['rapido', 'verde', 'urbano', 'linha', 'rota', 'expresso', 'direto'];
-    const nouns = ['norte', 'sul', 'central', 'facens', 'terminal', 'shopping', 'parque'];
-    const num = Math.floor(Math.random() * 900) + 100;
+    const adjectives = ['azul', 'verde', 'rapido', 'direto', 'expresso'];
+    const nouns = ['linha', 'rota', 'corredor', 'terminal', 'shopping'];
+    const num = Math.floor(Math.random() * 900 + 100);
     const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
     const noun = nouns[Math.floor(Math.random() * nouns.length)];
     return `${adj}-${noun}-${num}`;
   }
 
-  // ── Storage ───────────────────────────────────────────────────────────────
+  // ── Entrar na sala ─────────────────────────────────
+  async enterRoom(
+    code: string,
+    role: 'driver' | 'passenger',
+    name: string,
+    clientId?: string,
+    password?: string,
+  ): Promise<void> {
+    this.leaveRoom();
 
-  private loadFromStorage(): RoomMeta[] {
+    const id = clientId || crypto.randomUUID();
+
+    this.currentChannel = this.supabase.channel(`room:${code}`, {
+      config: { broadcast: { self: true } },
+    });
+
+    await this.currentChannel.subscribe(async (status: string) => {
+      if (status === 'SUBSCRIBED') {
+        await this.currentChannel.track({
+          name, // era "user", corrigir para "name" se for o esperado
+          role,
+          clientId,
+          online_at: new Date().toISOString(),
+          password: password || null,
+        });
+      }
+    });
+  }
+
+  // ── Sair da sala ───────────────────────────────────
+  leaveRoom(): void {
+    if (this.currentChannel) {
+      this.supabase.removeChannel(this.currentChannel);
+      this.currentChannel = null;
+    }
+  }
+
+  // ── Salas recentes (localStorage) ─────────────────
+  private recentKey = 'ecobus_recent_rooms';
+
+  recentRooms(): RoomMeta[] {
+    const raw = localStorage.getItem(this.recentKey);
+    if (!raw) return [];
     try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      return raw ? (JSON.parse(raw) as RoomMeta[]) : [];
+      return JSON.parse(raw) as RoomMeta[];
     } catch {
       return [];
     }
   }
 
-  private saveToStorage(rooms: RoomMeta[]): void {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(rooms));
-    } catch {
-      /* ignore */
-    }
+  private saveRecentRoom(code: string, role: 'driver' | 'passenger', name: string): void {
+    const rooms = this.recentRooms().filter((r) => r.code !== code);
+    rooms.unshift({ code, role, name, lastUsed: Date.now() });
+    const trimmed = rooms.slice(0, 5);
+    localStorage.setItem(this.recentKey, JSON.stringify(trimmed));
+  }
+
+  clearRecent(): void {
+    localStorage.removeItem(this.recentKey);
   }
 }
