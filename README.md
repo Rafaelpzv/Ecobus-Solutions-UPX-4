@@ -94,6 +94,15 @@ Home
 
 ---
 
+```
+
+### Vídeo Pitch e Aplicação Web
+
+| `Vídeo Pitch` | https://youtu.be/rfdA4J2MNNo?feature=shared |
+| `Aplicação Web` | https://ecobus-solutions-upx-4.vercel.app/ |
+---
+
+
 ## 🌍 Impacto (ODS)
 
 Alinhado com os Objetivos de Desenvolvimento Sustentável da ONU:
