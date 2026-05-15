@@ -94,10 +94,11 @@ Home
 
 ---
 
-```
+
 
 ### Vídeo Pitch e Aplicação Web
-
+| Nome | URL |
+|---|---|
 | `Vídeo Pitch` | https://youtu.be/rfdA4J2MNNo?feature=shared |
 | `Aplicação Web` | https://ecobus-solutions-upx-4.vercel.app/ |
 ---
